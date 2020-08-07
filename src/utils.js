@@ -1,6 +1,9 @@
 const Apify = require('apify');
+const { log, requestAsBrowser } = Apify.utils;
+const rp = require('request-promise-native');
 
 const PROXY_DEFAULT_COUNTRY = 'US';
+const BASE_DOWNLOAD_URL = 'http://pluginillinois.org/export.ashx?fmt=csv&said=';
 
 function getProxyUrl(proxyConfiguration, addSession) {
 	let { useApifyProxy = true, proxyUrl, apifyProxyGroups = ["SHADER"] } = proxyConfiguration;
@@ -21,5 +24,5 @@ function getProxyUrl(proxyConfiguration, addSession) {
 }
 
 module.exports = {
-    getProxyUrl
+    getProxyUrl,
 };

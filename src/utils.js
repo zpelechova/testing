@@ -1,4 +1,4 @@
-const Apify = require("apify");
+const Apify = require('apify');
 
 const PROXY_DEFAULT_COUNTRY = 'US';
 
@@ -21,5 +21,5 @@ function getProxyUrl(proxyConfiguration, addSession) {
 }
 
 module.exports = {
-	getProxyUrl,
+    getProxyUrl
 };

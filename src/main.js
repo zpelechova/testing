@@ -1,149 +1,72 @@
 const Apify = require('apify');
-const { log } = Apify.utils;
-
-const { getProxyUrl, downloadFile, objToCsv } = require('./utils');
-
-const START_URL = 'http://www.energyswitchma.gov/#/';
-const ZIPCODES = [
-    { utility: 'National Grid', zipcode: '01915', companyId: '1' },
-    { utility: 'NSTAR', zipcode: '02451', companyId: '2' },
-    { utility: 'WMECo', zipcode: '01243', companyId: '4' },
-    { utility: 'Unitil', zipcode: '01469', companyId: '5' }
-];
-const SHOP_TYPES = ['1', '2'];
-
+const { utils: { log } } = Apify;
 
 Apify.main(async () => {
-	const input = await Apify.getInput();
-	const { proxyConfiguration = {} } = input;
-
-	const proxyUrl = getProxyUrl(proxyConfiguration, true);
-	const userAgent = proxyUrl ? Apify.utils.getRandomUserAgent() : undefined;
-
-    const requestQueue = await Apify.openRequestQueue();
-    for (let i = 0; i < ZIPCODES.length; i++) {
-        const { utility, zipcode, companyId } = ZIPCODES[i];
-
-        for (let z = 0; z < SHOP_TYPES.length; z++) {
-            const shopType = SHOP_TYPES[z];
-            const rateType = shopType === '1' ? 'Residential' : 'Commercial';
-
-            await requestQueue.addRequest({
-                url: START_URL,
-                uniqueKey: 'k-' + zipcode + 's-' + shopType,
-                userData: { label: 'START', utility, zipcode, companyId, shopType }
-            });
-            console.log('Added:', utility, zipcode, rateType);
+    const startUrls = [
+        {
+            "url": "https://www.socalgas.com/for-your-business/energy-market-services/gas-prices",
+            "userData": {
+                "state": "CA",
+            }
         }
-    }
-
+    ]
+    const requestList = await Apify.openRequestList('start-urls', startUrls);
     const dataset = await Apify.openDataset('powermatrix');
-    // await dataset.drop();
+    const proxyConfiguration = await Apify.createProxyConfiguration({
+        groups: ['SHADER'],
+        countryCode: 'US',
+    });
 
-    const crawler = new Apify.PuppeteerCrawler({
-		requestQueue,
-		maxRequestRetries: 3,
-		handlePageTimeoutSecs: 240,
-		maxConcurrency: 1,
-		launchPuppeteerOptions: {
-		    useApifyProxy: false,
-			userAgent: userAgent,
-			timeout: 120 * 1000,
-			headless: true,
-		},
+    const crawler = new Apify.CheerioCrawler({
+        requestList,
+        proxyConfiguration,
+        useSessionPool: true,
+        persistCookiesPerSession: true,
+        handlePageFunction: async ({ request, $ }) => {
+            const { url, userData: { label } } = request;
+            log.info('Page opened.', { label, url });
 
-		gotoFunction: async ({ request, page }) => {
-			return page.goto(request.url, {
-				timeout: 180 * 1000,
-				waitUntil: 'networkidle2',
-			});
-		},
+            var outputData = {};
 
-		handlePageFunction: async ({ request, page }) => {
-            const { label, utility, zipcode, companyId, shopType } = request.userData;
-            const rateType = shopType === '1' ? 'Residential' : 'Commercial';
+            outputData.rate = parseFloat($('article table > tbody > tr:first-child > td:last-child').text().trim()) / 100;
 
-            if (label === 'START') {
-                log.info(`Processing: ${utility} (${zipcode}) - ${rateType}`);
+            outputData.offerNotes = $('article.node--components').first().find('.content .paragraph').text().replace('.  ', '.').trim();
 
-                await page.waitForSelector(`input[type=radio]`);
+            const now = new Date();
+            outputData.date = new Intl.DateTimeFormat('en-US').format(now);
 
-                await page.evaluate((shopType) => {
-                    document.querySelector(`input[type=radio][ng-value="${shopType}"]`).click();
-                }, shopType);
-                await page.type('input.form-control', zipcode, { delay: 100 });
+            outputData.utility = 'Southern California Gas Company (SoCalGas)';
+            outputData.commodity = 'Gas';
+            outputData.rateUnits = '$/therm';
+            outputData.rateType = 'PTC';
+            outputData.serviceType = 'Business';
 
-                await Promise.all([
-                	page.waitForNavigation({ waitUntil: 'networkidle2' }),
-                	page.evaluate(() => document.querySelector('button.btn.btn-warning').click())
-                ]);
+            await dataset.pushData({
+                "Date": outputData.date ? outputData.date : '',
+                "State": request.userData.state ? request.userData.state : '',
+                "Utility": outputData.utility ? outputData.utility : '',
+                "Supplier": outputData.supplier ? outputData.supplier : '',
+                "Rate Type": outputData.rateType ? outputData.rateType : '',
+                "Rate Category": outputData.rateCategory ? outputData.rateCategory : '',
+                "Rate": outputData.rate ? outputData.rate : '',
+                "Rate Units": outputData.rateUnits ? outputData.rateUnits : '',
+                "Term": outputData.term ? outputData.term : '',
+                "Cancelation Fee": outputData.cancelationFee ? outputData.cancelationFee : '',
+                "Renewable Blend": outputData.renewableBlend ? outputData.renewableBlend : '',
+                "Offer Notes": outputData.offerNotes ? outputData.offerNotes : '',
+                "Additional Products & Services": outputData.additionalPS ? outputData.additionalPS : '',
+                "Fee": outputData.fee ? outputData.fee : '',
+                "Fee Type": outputData.feeType ? outputData.feeType : '',
+                "Fee Notes": outputData.feeNotes ? outputData.feeNotes : '',
+                "Termination Notes": outputData.terminationNotes ? outputData.terminationNotes : '',
+                "Other Notes": outputData.otherNotes ? outputData.otherNotes : '',
+                "RateType": outputData.serviceType ? outputData.serviceType : '',
+                "Commodity": outputData.commodity ? outputData.commodity : '',
+            });
+        }
+    });
 
-                await page.waitForSelector('button.btn.btn-default[json-export-excel]', { timeout: 60*1000 });
-
-                log.info('Downloading file...');
-                const data = await downloadFile(page, zipcode, companyId);
-                log.info('File downloaded successfully.');
-
-                for (let i = 0; i < data.length; i++) {
-                    const item = data[i];
-                    const csv = objToCsv(item);
-
-                    await requestQueue.addRequest({
-                        url: 'about:blank',
-                        uniqueKey: 'k' + zipcode + 's-' + shopType + 'p-' + i,
-                        userData: { label: 'ITEM', utility, zipcode, item, pos: i, shopType, csv }
-                    });
-                }
-                log.info(`All items added for ${utility} (${zipcode}) - ${rateType}`);
-            }
-
-            if (label === 'ITEM') {
-                const { utility, zipcode, item, pos, shopType, csv } = request.userData;
-                const rateType = shopType === '1' ? 'Residential' : 'Commercial';
-                log.info(`Processing: ${utility} - ${rateType} - item ${pos}`);
-
-                const data = Object.create(null);
-                const d = new Date();
-
-                data.Date = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-                data.State = 'MA';
-                data.Utility = utility;
-                data.Supplier = pos === 0 ? null : item.supplierName;
-                data.Commodity = 'Power';
-                data.RateType = rateType;
-                data['Rate Type'] = pos === 0 ? 'PTC' : item.pricingStructureDescription;
-                data['Rate Category'] = pos === 0 ? 'R1' : 'All';
-                const centRateStr = item.pricePerUnit.replace(' ¢/kWh', '').replace('|TBD', '');
-                data.Rate = Number(centRateStr) / 100;
-                data['Rate Units'] = '$/kWh';
-                data.Term = parseInt(item.contractTerm.replace(' months', ''));
-                const canc = item.earlyTerminationDetailExport;
-                const match = canc ? canc.match(/\d+\.\d+/) : null;
-                data['Cancellation Fee'] = match ? parseFloat(match[0].replace('$', '')) : canc;
-                data['Renewable Blend'] = item.renewableEnergyProduct ? parseInt(item.renewableEnergyProduct.replace('%', '')) : 0;
-                data['Offer Notes']	= item.introductoryPrice;
-                data['Additional Products & Services'] = item.otherProductServices;
-                data.Fee = item.enrollmentFeeExport || item.enrollmentFee;
-                data['Fee Type'] = null;
-                data['Fee Notes'] = null;
-                data['Termination Notes'] = item.earlyTerminationDetailExport;
-                data['Other Notes'] = `zipcode=${zipcode}`;
-                data['Csv copy'] = csv;
-
-                await dataset.pushData(data);
-                await Apify.pushData(data);
-                log.info(`Data pushed: ${utility} - ${rateType} - item ${pos}`);
-            }
-
-		},
-
-		handleFailedRequestFunction: async ({ request }) => {
-			console.log(`Request ${request.url} failed too many times`);
-			await dataset.pushData({
-				'#debug': Apify.utils.createRequestDebugInfo(request),
-			});
-		},
-	});
-
-	await crawler.run();
+    log.info('Starting the crawl.');
+    await crawler.run();
+    log.info('Crawl finished.');
 });

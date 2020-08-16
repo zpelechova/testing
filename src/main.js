@@ -38,7 +38,7 @@ Apify.main(async () => {
     }
 
     const dataset = await Apify.openDataset('powermatrix');
-    await dataset.drop();
+    // await dataset.drop();
 
     const crawler = new Apify.PuppeteerCrawler({
 		requestQueue,

@@ -1,7 +1,7 @@
 {
-	"name": "boilerplate",
+	"name": "offers-il-bz",
 	"version": "0.0",
 	"buildTag": "latest",
 	"env": null,
-	"template": "puppeteer_crawler"
+	"template": "project_cheerio_crawler"
 }

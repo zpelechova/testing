@@ -41,7 +41,8 @@ Apify.main(async () => {
             outputData.rateType = 'PTC';
             outputData.serviceType = 'Business';
 
-            await dataset.pushData({
+            
+            const data = {
                 "Date": outputData.date ? outputData.date : '',
                 "State": request.userData.state ? request.userData.state : '',
                 "Utility": outputData.utility ? outputData.utility : '',
@@ -62,7 +63,10 @@ Apify.main(async () => {
                 "Other Notes": outputData.otherNotes ? outputData.otherNotes : '',
                 "RateType": outputData.serviceType ? outputData.serviceType : '',
                 "Commodity": outputData.commodity ? outputData.commodity : '',
-            });
+            };
+
+            await dataset.pushData(data);
+            await Apify.pushData(data);
         }
     });
 

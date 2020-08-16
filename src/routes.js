@@ -79,6 +79,9 @@ exports.handleBase = async ({request, $}, requestQueue, url) => {
 
     });
     await dataset.pushData(results);
+
+    await Apify.pushData(results);
+
     //await Apify.utils.enqueueLinks({
     //  selector: "table.table-ags tbody tr td:nth-child(1) a",
     // $,

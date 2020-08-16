@@ -1,7 +1,7 @@
 {
-	"name": "offers-il-bz",
+	"name": "energyswitch-ma",
 	"version": "0.0",
 	"buildTag": "latest",
 	"env": null,
-	"template": "project_cheerio_crawler"
+	"template": "puppeteer_crawler"
 }

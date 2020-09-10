@@ -9,7 +9,7 @@
 #  apify/actor-node-chrome-xvfb (Node.js + Chrome + Xvfb on Debian)
 # For more information, see https://apify.com/docs/actor#base-images
 # Note that you can use any other image from Docker Hub.
-FROM apify/actor-node-basic
+FROM apify/actor-node-chrome
 
 # Second, copy just package.json and package-lock.json since they are the only files
 # that affect NPM install in the next step
@@ -18,7 +18,7 @@ COPY package*.json ./
 # Install NPM packages, skip optional and development dependencies to keep the
 # image small. Avoid logging too much and print the dependency tree for debugging
 RUN npm --quiet set progress=false \
- && npm install --only=prod --no-optional \
+ && npm install --only=prod \
  && echo "Installed NPM packages:" \
  && npm list \
  && echo "Node.js version:" \

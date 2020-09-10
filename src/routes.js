@@ -11,21 +11,22 @@ exports.handleBase = async ({ request, page }) => {
     var results = [];
 
     var NUMERIC_REGEXP = /[-]{0,1}[\d]*[.]{0,1}[\d]+/g;
-    
+
     for (let plan of plans) {
         const vendor = await plan.$eval(SELECTORS.VENDOR, elem => elem.innerText);
         let term = await plan.$eval(SELECTORS.TERM, elem => elem.innerText);
         term = term.trim().split("\n").join(" ");
         rate_dirty =  await plan.$eval(SELECTORS.RATE, elem => elem.innerText);
+        cancellationFee = await plan.$eval(SELECTORS.CANCELLATION_FEE, elem => elem.innerText);
         let result = {
             Date: (new Date()).toLocaleDateString("ISO"),
             State: "TX",
             "Customer Type": "Residential",
             Utility: vendor,
             Supplier: vendor,
-            Rate: rate_dirty.match(NUMERIC_REGEXP),
+            Rate: Number(rate_dirty.match(NUMERIC_REGEXP)) * 100,
             Term: term,
-            "Cancellation Fee": await plan.$eval(SELECTORS.CANCELLATION_FEE, elem => elem.innerText)
+            "Cancellation Fee": cancellationFee.match(NUMERIC_REGEXP)
         }
         //console.log(result);
         results.push(result);

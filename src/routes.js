@@ -21,10 +21,10 @@ exports.handleBase = async ({ request, page }) => {
         let result = {
             Date: (new Date()).toLocaleDateString("ISO"),
             State: "TX",
-            "Customer Type": "Residential",
+            "RateType": "Residential",
             Utility: vendor,
             Supplier: vendor,
-            Rate: Number(rate_dirty.match(NUMERIC_REGEXP)) * 100,
+            Rate: Number(rate_dirty.match(NUMERIC_REGEXP)) / 100,
             Term: term,
             "Cancellation Fee": cancellationFee.match(NUMERIC_REGEXP)
         }

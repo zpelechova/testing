@@ -8,7 +8,7 @@ exports.handleStart = async ({ $ }) =>
 
     for (i in links)
     {   
-        links[i] = `https://potravinydomov.itesco.sk${links[i].replace('?include-children=true', '/all')}`
+        links[i] = `https://potravinydomov.itesco.sk${links[i].replace('?include-children=true', '/all').replace('cs-CZ', 'sk-SK')}`
         await requestQueue.addRequest({
         url: links[i],
         userData: { label: 'DETAIL' }

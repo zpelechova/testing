@@ -10,7 +10,7 @@ exports.handleStart = async ({ $ }) =>
     {   
         links[i] = `https://nakup.itesco.cz/${links[i].replace('?include-children=true', '/all')}`
         await requestQueue.addRequest({
-        url: link,
+        url: links[i],
         userData: { label: 'DETAIL' }
         });
     }

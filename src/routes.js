@@ -1,53 +1,27 @@
 const Apify = require('apify');
 
-const { SELECTORS } = require("./config");
+exports.handleStart = async ({ $ }) =>
+{
+    const requestQueue = await Apify.openRequestQueue();
 
-const { utils: { log } } = Apify;
+    const links = $( "ul .menu-superdepartment a" ).map( function() {  return $(this).attr('href'); }).get();
 
-exports.handleBase = async ({ request, page }) => {
-    const dataset = await Apify.openDataset('powermatrix');
-    await page.waitForSelector(SELECTORS.PLAN_AREA);
-    let plans = await page.$$(SELECTORS.PLAN_AREA);
-    var results = [];
-
-    var NUMERIC_REGEXP = /[-]{0,1}[\d]*[.]{0,1}[\d]+/g;
-
-    for (let plan of plans) {
-        const vendor = await plan.$eval(SELECTORS.VENDOR, elem => elem.innerText);
-        let term = await plan.$eval(SELECTORS.TERM, elem => elem.innerText);
-        term = term.trim().split("\n").join(" ");
-        if (term !== 'Month to Month'){
-            term = term.replace(/\D/g, "")
-        }
-        rate_dirty =  await plan.$eval(SELECTORS.RATE, elem => elem.innerText);
-        cancellationFee = await plan.$eval(SELECTORS.CANCELLATION_FEE, elem => elem.innerText);
-
-        let result = {
-            "Additional Products & Services": '',
-            Commodity: "Power",
-            Fee: '',
-            "Fee Notes": "",
-            "Fee Type" : '',
-            "Offer Notes": '',
-            "Other Notes": "",
-            "Rate Category": '',
-            "Rate Type": '',
-            "Rate Units": 'kWh',
-            "Renewable Blend": '',
-            "Termination Notes": '',
-            Date: (new Date()).toLocaleDateString("ISO"),
-            State: "TX",
-            "RateType": "Residential",
-            Utility: vendor,
-            Supplier: vendor,
-            Rate: Number(rate_dirty.match(NUMERIC_REGEXP)) / 100,
-            Term: term,
-            "Cancellation Fee": cancellationFee.match(NUMERIC_REGEXP)
-        }
-        //console.log(result);
-        results.push(result);
+    for (i in links)
+    {   
+        links[i] = `https://nakup.itesco.cz/${links[i].replace('?include-children=true', '/all')}`
+        await requestQueue.addRequest({
+        url: link,
+        userData: { label: 'DETAIL' }
+        });
     }
+};
 
-    await dataset.pushData(results);
-    await Apify.pushData(results);
+exports.handleDetail = async ({ request, $ }) => {
+
+    let result = {};
+    result.itemUrl = request.url;
+    result.category = $('h1').text();
+    result.productCount = $('.items-count').text().replace(/\D/g, "");
+
+    Apify.pushData(result)
 };

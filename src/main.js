@@ -6,7 +6,8 @@ const { utils: { log } } = Apify;
 Apify.main(async () => {
  
     const requestQueue = await Apify.openRequestQueue();
-    await requestQueue.addRequest({ url: "https://nakup.itesco.cz/groceries/cs-CZ/" });
+    await requestQueue.addRequest({ url: "https://potravinydomov.itesco.sk/groceries/sk-SK/" });
+    // await requestQueue.addRequest({ url: "https://nakup.itesco.cz/groceries/cs-CZ/" });
 
     const crawler = new Apify.CheerioCrawler({
         requestQueue,

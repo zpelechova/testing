@@ -25,7 +25,7 @@ exports.handleBase = async ({ request, page }) => {
             "Fee Notes": "",
             "Fee Type" : '',
             "Offer Notes": '',
-            "Other Notes": '',
+            "Other Notes": url,
             "Rate Category": '',
             "Rate Type": '',
             "Rate Units": 'kWh',

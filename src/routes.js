@@ -16,8 +16,12 @@ exports.handleBase = async ({ request, page }) => {
         const vendor = await plan.$eval(SELECTORS.VENDOR, elem => elem.innerText);
         let term = await plan.$eval(SELECTORS.TERM, elem => elem.innerText);
         term = term.trim().split("\n").join(" ");
+        if (term !== 'Month to Month'){
+            term = term.replace(/\D/g, "")
+        }
         rate_dirty =  await plan.$eval(SELECTORS.RATE, elem => elem.innerText);
         cancellationFee = await plan.$eval(SELECTORS.CANCELLATION_FEE, elem => elem.innerText);
+
         let result = {
             "Additional Products & Services": '',
             Commodity: "Power",
@@ -25,7 +29,7 @@ exports.handleBase = async ({ request, page }) => {
             "Fee Notes": "",
             "Fee Type" : '',
             "Offer Notes": '',
-            "Other Notes": url,
+            "Other Notes": '',
             "Rate Category": '',
             "Rate Type": '',
             "Rate Units": 'kWh',

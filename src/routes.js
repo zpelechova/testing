@@ -19,6 +19,18 @@ exports.handleBase = async ({ request, page }) => {
         rate_dirty =  await plan.$eval(SELECTORS.RATE, elem => elem.innerText);
         cancellationFee = await plan.$eval(SELECTORS.CANCELLATION_FEE, elem => elem.innerText);
         let result = {
+            "Additional Products & Services": '',
+            Commodity: "Power",
+            Fee: '',
+            "Fee Notes": "",
+            "Fee Type" : '',
+            "Offer Notes": '',
+            "Other Notes": '',
+            "Rate Category": '',
+            "Rate Type": '',
+            "Rate Units": 'kWh',
+            "Renewable Blend": '',
+            "Termination Notes": '',
             Date: (new Date()).toLocaleDateString("ISO"),
             State: "TX",
             "RateType": "Residential",

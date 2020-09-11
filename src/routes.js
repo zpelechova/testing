@@ -29,7 +29,7 @@ exports.handleBase = async ({ request, page }) => {
             "Fee Notes": "",
             "Fee Type" : '',
             "Offer Notes": '',
-            "Other Notes": zipCodes,
+            "Other Notes": "",
             "Rate Category": '',
             "Rate Type": '',
             "Rate Units": 'kWh',

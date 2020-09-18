@@ -9,7 +9,13 @@
 #  apify/actor-node-chrome-xvfb (Node.js + Chrome + Xvfb on Debian)
 # For more information, see https://apify.com/docs/actor#base-images
 # Note that you can use any other image from Docker Hub.
-FROM apify/actor-node-basic
+FROM apify/actor-node-chrome
+
+# Install pdf tools 
+USER 0
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y poppler-utils --no-install-recommends
+USER myuser
 
 # Second, copy just package.json and package-lock.json since they are the only files
 # that affect NPM install in the next step

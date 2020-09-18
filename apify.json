@@ -1,7 +1,7 @@
 {
-	"name": "tesco_count",
+	"name": "energy",
 	"version": "0.0",
 	"buildTag": "latest",
 	"env": null,
-	"template": "project_cheerio_crawler"
+	"template": "puppeteer_single_page"
 }

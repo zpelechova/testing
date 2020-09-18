@@ -1,20 +1,25 @@
 {
-	"name": "tesco_count",
+	"name": "energy",
 	"version": "0.0.1",
 	"description": "This is a boilerplate of an Apify actor.",
 	"dependencies": {
-		"apify": "^0.21.0"
+		"apify": "^0.20.0",
+		"fs": "0.0.1-security",
+		"path": "^0.12.7",
+		"pdf-text-extract": "^1.5.0",
+		"request-fixed-tunnel-agent": "^2.88.3",
+		"tmp": "^0.2.1",
+		"url": "^0.11.0",
+		"util": "^0.12.3"
 	},
-	"devDependencies": {
-		"@apify/eslint-config": "0.1.0",
-		"eslint": "^7.0.0"
-	},
+	"devDependencies": {},
 	"scripts": {
-		"start": "node src/main.js",
-		"lint": "./node_modules/.bin/eslint ./src --ext .js,.jsx",
-		"lint:fix": "./node_modules/.bin/eslint ./src --ext .js,.jsx --fix",
+		"start": "node main.js",
 		"test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
 	},
 	"author": "It's not you it's me",
-	"license": "ISC"
+	"license": "ISC",
+	"prettier": {
+		"tabWidth": 4
+	}
 }

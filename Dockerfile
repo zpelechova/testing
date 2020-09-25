@@ -11,12 +11,6 @@
 # Note that you can use any other image from Docker Hub.
 FROM apify/actor-node-chrome
 
-# Install pdf tools 
-USER 0
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y poppler-utils --no-install-recommends
-USER myuser
-
 # Second, copy just package.json and package-lock.json since they are the only files
 # that affect NPM install in the next step
 COPY package*.json ./
@@ -24,7 +18,7 @@ COPY package*.json ./
 # Install NPM packages, skip optional and development dependencies to keep the
 # image small. Avoid logging too much and print the dependency tree for debugging
 RUN npm --quiet set progress=false \
- && npm install --only=prod --no-optional \
+ && npm install --only=prod \
  && echo "Installed NPM packages:" \
  && npm list \
  && echo "Node.js version:" \

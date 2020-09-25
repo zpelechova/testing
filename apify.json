@@ -1,7 +1,7 @@
 {
-	"name": "energy",
+	"name": "offers-ny",
 	"version": "0.0",
 	"buildTag": "latest",
 	"env": null,
-	"template": "puppeteer_single_page"
+	"template": "project_cheerio_crawler"
 }

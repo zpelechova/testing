@@ -86,7 +86,7 @@ Apify.main(async () => {
             "Rate Unit": rate[1],
             "Term": term,
             "Cancellation Fee": cancFee ? parseInt(cancFee[1]) : null,
-            "Renewable Blend": line.PERCENTAGE_RENEWABLE,
+            "Renewable Blend": Number(line.PERCENTAGE_RENEWABLE) * 100,
             "Offer Notes": line.COMMENTS,
             "Additional Products & Services": null,
             "Fee": null,

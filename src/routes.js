@@ -160,6 +160,31 @@ exports.handleUtility = async ({ request, page }) => {
                     "Renewable blend": "",
                     "Termination Notes": ""
                 }
+        );
+
+        await Apify.pushData(
+            {
+                    "Date": (new Date()).toLocaleDateString("ISO"),
+                    "Commodity": "Power",
+                    "State": "OH",
+                    "Customer Class": CustomerType,
+                    "Utility": utilityName,
+                    "Supplier": "",
+                    "Rate Category" : "",
+                    "Rate Type": "PTC",
+                    "Rate": PTCRate,
+                    "Term": PTCTerm,
+                    "Cancellation Fee": "",
+                    "Offer Notes": "",
+                    "Fee": "",
+                    "Fee Notes": FeeType,
+                    "Fee Type": "",
+                    "Other Notes": "",
+                    "Additional Products & Services": "",
+                    "Rate units": "$/kWh",
+                    "Renewable blend": "",
+                    "Termination Notes": ""
+                }
         )
     }
 };

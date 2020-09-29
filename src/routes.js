@@ -115,9 +115,10 @@ exports.handleUtility = async ({ request, page }) => {
             "Date": (new Date()).toLocaleDateString("ISO"),
             "Commodity": "Power",
             "State": "OH",
-            "Customer Type": CustomerType,
+            "Customer Class": CustomerType,
             "Utility": utilityName,
             "Supplier": line.CompanyName,
+            "Rate Category" : "",
             "Rate Type": line.RateType,
             "Rate": line.Price,
             "PTC Rate": PTCRate,
@@ -126,9 +127,10 @@ exports.handleUtility = async ({ request, page }) => {
             "Cancellation Fee": line.EarlyTerminationFee,
             "Offer Notes": line.OfferDetails.trim(),
             "Fee": line.MonthlyFee,
-            "Fee Type": FeeType,
-            "Introductory Offer": line.IntroductoryOfferDetails.trim(),
-            "Promotional Offer": line.PromotionalOfferDetails.trim()
+            "Fee Notes": FeeType,
+            "Fee Type": line.IntroductoryOfferDetails.trim(),
+            "Other Notes": "",
+            "Additional Products & Services": line.PromotionalOfferDetails.trim(),,
         }
         //console.log(result);
         await dataset.pushData(result);

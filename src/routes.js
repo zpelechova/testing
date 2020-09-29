@@ -132,7 +132,7 @@ exports.handleUtility = async ({ request, page }) => {
             "Other Notes": "",
             "Additional Products & Services": line.PromotionalOfferDetails.trim(),
             "Rate units": "",
-            "Renewable blend": "",
+            "Renewable blend": line.Renewable,
             "Termination Notes": ""
         }
         //console.log(result);

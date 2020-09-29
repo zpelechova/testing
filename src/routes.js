@@ -130,7 +130,7 @@ exports.handleUtility = async ({ request, page }) => {
             "Fee Notes": FeeType,
             "Fee Type": line.IntroductoryOfferDetails.trim(),
             "Other Notes": "",
-            "Additional Products & Services": line.PromotionalOfferDetails.trim(),,
+            "Additional Products & Services": line.PromotionalOfferDetails.trim(),
         }
         //console.log(result);
         await dataset.pushData(result);

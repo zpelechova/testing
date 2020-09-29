@@ -121,9 +121,7 @@ exports.handleUtility = async ({ request, page }) => {
             "Rate Category" : "",
             "Rate Type": line.RateType,
             "Rate": line.Price,
-            "PTC Rate": PTCRate,
             "Term": line.TermLength,
-            "PTC Term": PTCTerm,
             "Cancellation Fee": line.EarlyTerminationFee,
             "Offer Notes": line.OfferDetails.trim(),
             "Fee": line.MonthlyFee,
@@ -131,13 +129,38 @@ exports.handleUtility = async ({ request, page }) => {
             "Fee Type": line.IntroductoryOfferDetails.trim(),
             "Other Notes": "",
             "Additional Products & Services": line.PromotionalOfferDetails.trim(),
-            "Rate units": "",
+            "Rate units": "$/kWh",
             "Renewable blend": line.Renewable,
             "Termination Notes": ""
         }
         //console.log(result);
         await dataset.pushData(result);
         await Apify.pushData(result);
+
+        await dataset.pushData(
+            {
+                    "Date": (new Date()).toLocaleDateString("ISO"),
+                    "Commodity": "Power",
+                    "State": "OH",
+                    "Customer Class": CustomerType,
+                    "Utility": utilityName,
+                    "Supplier": "",
+                    "Rate Category" : "",
+                    "Rate Type": "PTC",
+                    "Rate": PTCRate,
+                    "Term": PTCTerm,
+                    "Cancellation Fee": "",
+                    "Offer Notes": "",
+                    "Fee": "",
+                    "Fee Notes": FeeType,
+                    "Fee Type": "",
+                    "Other Notes": "",
+                    "Additional Products & Services": "",
+                    "Rate units": "$/kWh",
+                    "Renewable blend": "",
+                    "Termination Notes": ""
+                }
+        )
     }
 };
 

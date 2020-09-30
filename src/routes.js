@@ -137,55 +137,71 @@ exports.handleUtility = async ({ request, page }) => {
         await dataset.pushData(result);
         await Apify.pushData(result);
 
-        await dataset.pushData(
-            {
-                    "Date": (new Date()).toLocaleDateString("ISO"),
-                    "Commodity": "Power",
-                    "State": "OH",
-                    "Customer Class": CustomerType,
-                    "Utility": utilityName,
-                    "Supplier": "",
-                    "Rate Category" : "",
-                    "Rate Type": "PTC",
-                    "Rate": PTCRate,
-                    "Term": PTCTerm,
-                    "Cancellation Fee": "",
-                    "Offer Notes": "",
-                    "Fee": "",
-                    "Fee Notes": FeeType,
-                    "Fee Type": "",
-                    "Other Notes": "",
-                    "Additional Products & Services": "",
-                    "Rate units": "$/kWh",
-                    "Renewable blend": "",
-                    "Termination Notes": ""
-                }
-        );
+        const PTCData = [];
 
-        await Apify.pushData(
-            {
-                    "Date": (new Date()).toLocaleDateString("ISO"),
-                    "Commodity": "Power",
-                    "State": "OH",
-                    "Customer Class": CustomerType,
-                    "Utility": utilityName,
-                    "Supplier": "",
-                    "Rate Category" : "",
-                    "Rate Type": "PTC",
-                    "Rate": PTCRate,
-                    "Term": PTCTerm,
-                    "Cancellation Fee": "",
-                    "Offer Notes": "",
-                    "Fee": "",
-                    "Fee Notes": FeeType,
-                    "Fee Type": "",
-                    "Other Notes": "",
-                    "Additional Products & Services": "",
-                    "Rate units": "$/kWh",
-                    "Renewable blend": "",
-                    "Termination Notes": ""
-                }
-        )
+        const pagePTCObject = {
+            rate: PTCRate,
+            term: PTCTerm,
+            utility: utilityName
+        };
+
+        const found = PTCData.find(e => e.rate === pagePTCObject.rate && e.term === pagePTCObject.term && e.utility === pagePTCObject.utility);
+
+        if (!found) PTCData.push(pagePTCObject);
+
+        console.log(pagePTCObject);
+
+
+
+        // await dataset.pushData(
+        //     {
+        //             "Date": (new Date()).toLocaleDateString("ISO"),
+        //             "Commodity": "Power",
+        //             "State": "OH",
+        //             "Customer Class": CustomerType,
+        //             "Utility": utilityName,
+        //             "Supplier": "",
+        //             "Rate Category" : "",
+        //             "Rate Type": "PTC",
+        //             "Rate": PTCRate,
+        //             "Term": PTCTerm,
+        //             "Cancellation Fee": "",
+        //             "Offer Notes": "",
+        //             "Fee": "",
+        //             "Fee Notes": FeeType,
+        //             "Fee Type": "",
+        //             "Other Notes": "",
+        //             "Additional Products & Services": "",
+        //             "Rate units": "$/kWh",
+        //             "Renewable blend": "",
+        //             "Termination Notes": ""
+        //         }
+        // );
+
+        // await Apify.pushData(
+        //     {
+        //             "Date": (new Date()).toLocaleDateString("ISO"),
+        //             "Commodity": "Power",
+        //             "State": "OH",
+        //             "Customer Class": CustomerType,
+        //             "Utility": utilityName,
+        //             "Supplier": "",
+        //             "Rate Category" : "",
+        //             "Rate Type": "PTC",
+        //             "Rate": PTCRate,
+        //             "Term": PTCTerm,
+        //             "Cancellation Fee": "",
+        //             "Offer Notes": "",
+        //             "Fee": "",
+        //             "Fee Notes": "",
+        //             "Fee Type": "",
+        //             "Other Notes": "",
+        //             "Additional Products & Services": "",
+        //             "Rate units": "$/kWh",
+        //             "Renewable blend": "",
+        //             "Termination Notes": ""
+        //         }
+        // )
     }
 };
 

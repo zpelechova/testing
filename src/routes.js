@@ -43,7 +43,7 @@ exports.handleBase = async ({ request, page }, requestQueue) => {
     });
 };
 
-exports.handleUtility = async ({ request, page }) => {
+exports.handleUtility = async ({ request, page}, PTCData ) => {
     const dataset = await Apify.openDataset('powermatrix');
 
     await page.waitForSelector(SELECTOR.EXPORT_CSV);
@@ -136,8 +136,6 @@ exports.handleUtility = async ({ request, page }) => {
         //console.log(result);
         await dataset.pushData(result);
         await Apify.pushData(result);
-
-        const PTCData = [];
 
         const pagePTCObject = {
             rate: PTCRate,

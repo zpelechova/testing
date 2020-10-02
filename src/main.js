@@ -11,6 +11,8 @@ const { utils: { log } } = Apify;
 
 const { LABEL, BLOCK_RESOURCES } = require("./config");
 
+const PTCData = [];
+
 Apify.main(async () => {
     const startUrls = [
         {
@@ -55,7 +57,7 @@ Apify.main(async () => {
                 case LABEL.BASE:
                     return handleBase(context, requestQueue);
                 case LABEL.UTILITY:
-                    return handleUtility(context);
+                    return handleUtility(context, PTCData);
                 default:
                     throw new Error("Don't know what to do with this");
             }

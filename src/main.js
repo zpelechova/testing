@@ -74,6 +74,7 @@ Apify.main(async () => {
     log.info('Starting the crawl.');
     await crawler.run();
     for (ptc in PTCData) {
+        if (!CustomerType) { CustomerType = CustomerType } else CustomerType = "";
         await Apify.pushData(
                 {
                         "Date": (new Date()).toLocaleDateString("ISO"),

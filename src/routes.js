@@ -125,7 +125,7 @@ exports.handleUtility = async ({ request, page}, PTCData ) => {
 
         if (!found) PTCData.push(pagePTCObject);
 
-        console.log(PTCData);
+        console.log("So the PTC data are here: " + PTCData);
 
         await Apify.setValue('ptc', PTCData);
 

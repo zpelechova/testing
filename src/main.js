@@ -96,6 +96,6 @@ Apify.main(async () => {
             "Rate units": "$/kWh",
             "Renewable blend": "",
             "Termination Notes": ""
-        });
+        })};
     log.info('Crawl finished.');
 });

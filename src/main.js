@@ -73,31 +73,29 @@ Apify.main(async () => {
 
     log.info('Starting the crawl.');
     await crawler.run();
-    for (ptc in PTCData) {
-        if (!CustomerType) { CustomerType = CustomerType } else CustomerType = "";
-        await Apify.pushData(
-                {
-                        "Date": (new Date()).toLocaleDateString("ISO"),
-                        "Commodity": "Power",
-                        "State": "OH",
-                        "Customer Class": CustomerType,
-                        "Utility": utilityName,
-                        "Supplier": "",
-                        "Rate Category" : "",
-                        "Rate Type": "PTC",
-                        "Rate": PTCRate,
-                        "Term": PTCTerm,
-                        "Cancellation Fee": "",
-                        "Offer Notes": "",
-                        "Fee": "",
-                        "Fee Notes": FeeType,
-                        "Fee Type": "",
-                        "Other Notes": "",
-                        "Additional Products & Services": "",
-                        "Rate units": "$/kWh",
-                        "Renewable blend": "",
-                        "Termination Notes": ""
-                    }
-            )};
+    for (const ptc of PTCData) {
+        const {PTCRate, PTCTerm, utilityName, CustomerType, FeeType} = ptc;
+        await Apify.pushData({
+            "Date": (new Date()).toLocaleDateString("ISO"),
+            "Commodity": "Power",
+            "State": "OH",
+            "Customer Class": CustomerType || "",
+            "Utility": utilityName || "",
+            "Supplier": "",
+            "Rate Category": "",
+            "Rate Type": "PTC",
+            "Rate": PTCRate || "",
+            "Term": PTCTerm || "",
+            "Cancellation Fee": "",
+            "Offer Notes": "",
+            "Fee": "",
+            "Fee Notes": FeeType || "",
+            "Fee Type": "",
+            "Other Notes": "",
+            "Additional Products & Services": "",
+            "Rate units": "$/kWh",
+            "Renewable blend": "",
+            "Termination Notes": ""
+        });
     log.info('Crawl finished.');
 });

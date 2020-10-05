@@ -121,7 +121,7 @@ exports.handleUtility = async ({ request, page}, PTCData ) => {
             FeeType: FeeType
         };
 
-        const found = PTCData.find(e => e.rate === pagePTCObject.rate && e.term === pagePTCObject.term && e.utility === pagePTCObject.utility);
+        const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCTerm === pagePTCObject.PTCTerm && e.utilityName === pagePTCObject.utilityName);
 
         if (!found) PTCData.push(pagePTCObject);
 

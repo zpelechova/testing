@@ -26,14 +26,21 @@ Apify.main(async () => {
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
+    const proxyConfiguration = await Apify.createProxyConfiguration(
+        {
+            groups: ['SHADER'],
+            countryCode: 'US'
+        }
+    );
 
     const crawler = new Apify.PuppeteerCrawler({
         requestList,
+        proxyConfiguration,
         requestQueue,
         useSessionPool: true,
         persistCookiesPerSession: true,
         launchPuppeteerOptions: {
-            useApifyProxy: true,
+            // useApifyProxy: true,
             // Chrome with stealth should work for most websites.
             // If it doesn't, feel free to remove this.
             useChrome: true,

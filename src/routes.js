@@ -130,7 +130,7 @@ exports.handleUtility = async ({ request, page}, PTCData ) => {
         await Apify.setValue('ptc', PTCData);
 
 for (ptc in PTCData) {
-    await dataset.pushData(
+    await Apify.pushData(
             {
                     "Date": (new Date()).toLocaleDateString("ISO"),
                     "Commodity": "Power",

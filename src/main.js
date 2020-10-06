@@ -11,36 +11,29 @@ const { utils: { log } } = Apify;
 
 const { LABEL, BLOCK_RESOURCES } = require("./config");
 
-const PTCData = [];
-
 Apify.main(async () => {
-    const startUrls = [
-        {
-          "url": "http://energychoice.ohio.gov/ApplesToApplesCategory.aspx?Category=Electric",
-          "method": "GET",
-          "userData": {
-            "label": "BASE"
+    const { startUrls } = {
+        "startUrls": [
+          {
+            "url": "http://www.energychoice.ohio.gov/ApplesToApplesCategory.aspx?Category=NaturalGas",
+            "method": "GET",
+            "userData": {
+              "label": "BASE"
+            }
           }
-        }
-      ]
+        ]
+    };
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
-    const proxyConfiguration = await Apify.createProxyConfiguration(
-        {
-            groups: ['SHADER'],
-            countryCode: 'US'
-        }
-    );
 
     const crawler = new Apify.PuppeteerCrawler({
         requestList,
-        proxyConfiguration,
         requestQueue,
         useSessionPool: true,
         persistCookiesPerSession: true,
         launchPuppeteerOptions: {
-            // useApifyProxy: true,
+            useApifyProxy: true,
             // Chrome with stealth should work for most websites.
             // If it doesn't, feel free to remove this.
             useChrome: true,
@@ -64,7 +57,7 @@ Apify.main(async () => {
                 case LABEL.BASE:
                     return handleBase(context, requestQueue);
                 case LABEL.UTILITY:
-                    return handleUtility(context, PTCData);
+                    return handleUtility(context);
                 default:
                     throw new Error("Don't know what to do with this");
             }
@@ -73,29 +66,5 @@ Apify.main(async () => {
 
     log.info('Starting the crawl.');
     await crawler.run();
-    for (const ptc of PTCData) {
-        const {PTCRate, PTCTerm, utilityName, CustomerType, FeeType} = ptc;
-        await Apify.pushData({
-            "Date": (new Date()).toLocaleDateString("ISO"),
-            "Commodity": "Power",
-            "State": "OH",
-            "Customer Class": CustomerType || "",
-            "Utility": utilityName || "",
-            "Supplier": "",
-            "Rate Category": "",
-            "Rate Type": "PTC",
-            "Rate": PTCRate || "",
-            "Term": PTCTerm || "",
-            "Cancellation Fee": "",
-            "Offer Notes": "",
-            "Fee": "",
-            "Fee Notes": FeeType || "",
-            "Fee Type": "",
-            "Other Notes": "",
-            "Additional Products & Services": "",
-            "Rate units": "$/kWh",
-            "Renewable blend": "",
-            "Termination Notes": ""
-        })};
     log.info('Crawl finished.');
 });

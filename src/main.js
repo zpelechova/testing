@@ -98,6 +98,6 @@ Apify.main(async () => {
             "Rate units": PTCUnit,
             "Renewable blend": "",
             "Termination Notes": ""
-        })};
+        })}; 
     log.info('Crawl finished.');
 });

@@ -43,8 +43,6 @@ exports.handleBase = async ({ request, page }, requestQueue) => {
     });
 };
 
-
-
 exports.handleUtility = async ({ request, page }) => {
     const dataset = await Apify.openDataset('powermatrix');
     await page.waitForSelector(SELECTOR.EXPORT_CSV);
@@ -79,31 +77,7 @@ exports.handleUtility = async ({ request, page }) => {
 
     /* resend the request */
     const response = await request_promise(options);
-    // Header
-    //SupplierCompanyName,CompanyName,SupplierAddress,SupplierAddress2,SupplierCity,SupplierState,SupplierZip,SupplierPhone,SupplierWebSiteUrl,TermsOfServiceURL,SignUpNowURL,Price,RateType,Renewable,IsIntroductoryOffer,IntroductoryOfferDetails,TermLength,EarlyTerminationFee,MonthlyFee,IsPromotionalOffer,PromotionalOfferDetails,OfferDetails
-    /*[
-  0 'SupplierCompanyName',
-  1 'CompanyName',
-  2 'SupplierAddress',
-  3 'SupplierAddress2',
-  4 'SupplierCity',
-  5 'SupplierState',
-  6 'SupplierZip',
-  7 'SupplierPhone',
-  8 'SupplierWebSiteUrl',
-  9 'SignUpNowURL',
-  10'Price',
-  11'RateType',
-  12'Renewable',
-  13'IsIntroductoryOffer',
-  14'IntroductoryOfferDetails',
-  15'TermLength',
-  16'EarlyTerminationFee',
-  17'MonthlyFee',
-  18'IsPromotionalOffer',
-  19'PromotionalOfferDetails',
-  20'OfferDetails'
-]*/
+    
     let response_content = response.toString();
     let csv_content = csv.parse(response_content);
     //fs.writeFileSync("test.csv", response_content, err => console.log(err));
@@ -120,22 +94,43 @@ exports.handleUtility = async ({ request, page }) => {
             "Customer Type": CustomerType,
             "Utility": utilityName,
             "Supplier": line.CompanyName,
+            "Rate Category" : "",
             "Rate Type": line.RateType,
             "Rate": line.Price,
-            "PTC Rate": PTCRate,
-            "PTC Unit": PTCUnit.replace("per ", ""),
             "Term": line.TermLength,
-            "PTC Term": PTCTerm,
             "Cancellation Fee": line.EarlyTerminationFee,
             "Offer Notes": line.OfferDetails,
             "Fee": line.MonthlyFee,
-            "Fee Type": FeeType,
-            "Introductory Offer": line.IntroductoryOfferDetails,
-            "Promotional Offer": line.PromotionalOfferDetails
+            "Fee Notes": FeeType,
+            "Fee Type": line.IntroductoryOfferDetails.trim(),
+            "Other Notes": "",
+            "Additional Products & Services": line.PromotionalOfferDetails.trim(),
+            "Rate units": "$/kWh",
+            "Renewable blend": line.Renewable,
+            "Termination Notes": ""
         }
         //console.log(result);
         await dataset.pushData(result);
         await Apify.pushData(result);
+
+        const pagePTCObject = {
+            PTCRate: PTCRate,
+            PTCTerm: PTCTerm,
+            PTCUnit: PTCUnit.replace("per ", ""),,
+            utilityName: utilityName,
+            CustomerType: CustomerType,
+            FeeType: FeeType
+        };
+
+        const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCTerm === pagePTCObject.PTCTerm && e.utilityName === pagePTCObject.utilityName);
+
+        if (!found) PTCData.push(pagePTCObject);
+
+        await Apify.setValue('ptc', PTCData);
+
     }
 };
 
+// "PTC Rate": PTCRate,
+// "PTC Term": PTCTerm,
+// "PTC Unit": PTCUnit.replace("per ", ""),

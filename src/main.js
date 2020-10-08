@@ -11,6 +11,8 @@ const { utils: { log } } = Apify;
 
 const { LABEL, BLOCK_RESOURCES } = require("./config");
 
+const PTCData = [];
+
 Apify.main(async () => {
     const { startUrls } = {
         "startUrls": [
@@ -25,15 +27,22 @@ Apify.main(async () => {
     };
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
-    const requestQueue = await Apify.openRequestQueue();
+    const requestQueue = await Apify.openRequestQueue();¨
+    const proxyConfiguration = await Apify.createProxyConfiguration(
+        {
+            groups: ['SHADER'],
+            countryCode: 'US'
+        }
+    );
 
     const crawler = new Apify.PuppeteerCrawler({
         requestList,
+        proxyConfiguration,
         requestQueue,
         useSessionPool: true,
         persistCookiesPerSession: true,
         launchPuppeteerOptions: {
-            useApifyProxy: true,
+            // useApifyProxy: true,
             // Chrome with stealth should work for most websites.
             // If it doesn't, feel free to remove this.
             useChrome: true,
@@ -66,5 +75,29 @@ Apify.main(async () => {
 
     log.info('Starting the crawl.');
     await crawler.run();
+    for (const ptc of PTCData) {
+        const {PTCRate, PTCTerm, PTCUnit, utilityName, CustomerType, FeeType} = ptc;
+        await Apify.pushData({
+            "Date": (new Date()).toLocaleDateString("ISO"),
+            "Commodity": "Power",
+            "State": "OH",
+            "Customer Class": CustomerType || "",
+            "Utility": utilityName || "",
+            "Supplier": "",
+            "Rate Category": "",
+            "Rate Type": "PTC",
+            "Rate": PTCRate || "",
+            "Term": PTCTerm || "",
+            "Cancellation Fee": "",
+            "Offer Notes": "",
+            "Fee": "",
+            "Fee Notes": FeeType || "",
+            "Fee Type": "",
+            "Other Notes": "",
+            "Additional Products & Services": "",
+            "Rate units": PTCUnit,
+            "Renewable blend": "",
+            "Termination Notes": ""
+        })};
     log.info('Crawl finished.');
 });

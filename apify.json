@@ -1,7 +1,7 @@
 {
-	"name": "offers-pa",
-	"version": "0.0",
+	"name": "kosik-cz",
+	"version": "0.1",
 	"buildTag": "latest",
 	"env": null,
-	"template": "project_cheerio_crawler"
+	"template": "cheerio_crawler"
 }

@@ -29,6 +29,7 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl) 
         let FeeType = await table.$eval("div.middle > span.monthly-fee", el => el.innerText);
         let Utility = await page.$eval("div.ratetype-result > div.distributor-name > span.name", el => el.innerText);
         let PTCRate = await page.$eval("div.distributor-rate > span.rate", el => el.innerText);
+        let PTCName = await page.$eval("div.distributor-name > span.name", el => el.innerText);
         let Additional = await table.$eval("div.more-info", el => el.innerText);
         let CustomerType;
         if (request.loadedUrl.indexOf("shop-for-your-home") != -1) CustomerType = "Residential";
@@ -42,17 +43,20 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl) 
             "Supplier": Supplier.trim(),
             "Rate Type": RateType.match(/.*\:(.*)/)[1].trim(),
             "Rate": Rate.replace("$", ""),
-            "PTC Rate": PTCRate.replace("$", ""),
             "Term": Term.match(/.*\:(.*)/)[1].trim(),
             "Cancellation Fee": CancellationFee.match(/.*\:(.*)/)[1].trim(),
             "Renewable Blend": RenewableBlend.match(/.*\:(.*)/)[1].replace("%", "").trim(),
             "Additional Products & Services": Additional.trim().replace(/\n/g, ""),
             "Fee": Fee.match(/.*\:(.*)/)[1].trim(),
             "Fee Type": FeeType,
+            "zzPTC Rate": PTCRate.replace("$", ""),
+    "zzPTC Name": PTCName,
         });
     }
 
     //console.log(results);
     await dataset.pushData(results);
     await Apify.pushData(results);
+
+    
 };

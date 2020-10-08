@@ -5,99 +5,69 @@
  */
 
 const Apify = require('apify');
-const { handleBase, handleUtility } = require('./routes');
+const { handleStart } = require('./routes');
 
 const { utils: { log } } = Apify;
 
-const { LABEL, BLOCK_RESOURCES } = require("./config");
-
-const PTCData = [];
-
 Apify.main(async () => {
-    const { startUrls } = {
+    const { startUrls, zip } = {
         "startUrls": [
           {
-            "url": "http://www.energychoice.ohio.gov/ApplesToApplesCategory.aspx?Category=NaturalGas",
-            "method": "GET",
-            "userData": {
-              "label": "BASE"
-            }
+            "url": "https://www.papowerswitch.com/shop-for-electricity/shop-for-your-home?type=all&zip={zip}"
+          },
+          {
+            "url": "https://www.papowerswitch.com/shop-for-electricity/shop-for-your-small-business?type=all&zip={zip}"
           }
+        ],
+        "zip": [
+          "15212",
+          "19601",
+          "19019",
+          "15521",
+          "15237",
+          "17501",
+          "17320"
         ]
     };
-
-    const requestList = await Apify.openRequestList('start-urls', startUrls);
+    //const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
-    const proxyConfiguration = await Apify.createProxyConfiguration(
-        {
-            groups: ['SHADER'],
-            countryCode: 'US'
+    for (let url of startUrls) {
+        if (url.url.indexOf("{zip}") == -1) {
+            throw new Error(`${url.url}: Nowhere to put ZIP code to`);
         }
-    );
+        for (let zipCode of zip) {
+            requestQueue.addRequest({
+                url: url.url.replace("{zip}", zipCode),
+                userData: {
+                    zip: zipCode,
+                    originalUrl: url.url
+                }
+            });
+        }
+
+    }
 
     const crawler = new Apify.PuppeteerCrawler({
-        requestList,
-        proxyConfiguration,
+        //requestList,
         requestQueue,
         useSessionPool: true,
         persistCookiesPerSession: true,
         launchPuppeteerOptions: {
-            // useApifyProxy: true,
+            useApifyProxy: false,
             // Chrome with stealth should work for most websites.
             // If it doesn't, feel free to remove this.
             useChrome: true,
             stealth: true,
         },
-        gotoFunction: async ({request, page}) => {
-            await Apify.utils.puppeteer.blockRequests(page, {
-                urlPatterns: [
-                    ...BLOCK_RESOURCES.analytics,
-                    ...BLOCK_RESOURCES.patterns
-                ]
-            });
-            return page.goto(request.url, {
-                waitUntil: "domcontentloaded"
-            });
-        },
+
         handlePageFunction: async (context) => {
-            const { url, userData: { label } } = context.request;
+            const { url, userData: { label, zip, originalUrl } } = context.request;
             log.info('Page opened.', { label, url });
-            switch (label) {
-                case LABEL.BASE:
-                    return handleBase(context, requestQueue);
-                case LABEL.UTILITY:
-                    return handleUtility(context);
-                default:
-                    throw new Error("Don't know what to do with this");
-            }
+            await handleStart(context, requestQueue, zip, originalUrl);
         },
     });
 
     log.info('Starting the crawl.');
     await crawler.run();
-    for (const ptc of PTCData) {
-        const {PTCRate, PTCTerm, PTCUnit, utilityName, CustomerType, FeeType} = ptc;
-        await Apify.pushData({
-            "Date": (new Date()).toLocaleDateString("ISO"),
-            "Commodity": "Power",
-            "State": "OH",
-            "Customer Class": CustomerType || "",
-            "Utility": utilityName || "",
-            "Supplier": "",
-            "Rate Category": "",
-            "Rate Type": "PTC",
-            "Rate": PTCRate || "",
-            "Term": PTCTerm || "",
-            "Cancellation Fee": "",
-            "Offer Notes": "",
-            "Fee": "",
-            "Fee Notes": FeeType || "",
-            "Fee Type": "",
-            "Other Notes": "",
-            "Additional Products & Services": "",
-            "Rate units": PTCUnit,
-            "Renewable blend": "",
-            "Termination Notes": ""
-        })}; 
     log.info('Crawl finished.');
 });

@@ -1,11 +1,9 @@
 {
-	"name": "offers-oh-gas",
+	"name": "offers-pa",
 	"version": "0.0.1",
 	"description": "This is a boilerplate of an Apify actor.",
 	"dependencies": {
-		"apify": "^0.21.0",
-		"csv-string": "^4.0.1",
-		"request-promise": "^4.2.6"
+		"apify": "^0.21.0"
 	},
 	"devDependencies": {
 		"@apify/eslint-config": "0.1.0",

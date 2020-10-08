@@ -27,7 +27,7 @@ Apify.main(async () => {
     };
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
-    const requestQueue = await Apify.openRequestQueue();¨
+    const requestQueue = await Apify.openRequestQueue();
     const proxyConfiguration = await Apify.createProxyConfiguration(
         {
             groups: ['SHADER'],

@@ -116,7 +116,7 @@ exports.handleUtility = async ({ request, page }) => {
         const pagePTCObject = {
             PTCRate: PTCRate,
             PTCTerm: PTCTerm,
-            PTCUnit: PTCUnit.replace("per ", ""),,
+            PTCUnit: PTCUnit.replace("per ", ""),
             utilityName: utilityName,
             CustomerType: CustomerType,
             FeeType: FeeType
@@ -130,7 +130,3 @@ exports.handleUtility = async ({ request, page }) => {
 
     }
 };
-
-// "PTC Rate": PTCRate,
-// "PTC Term": PTCTerm,
-// "PTC Unit": PTCUnit.replace("per ", ""),

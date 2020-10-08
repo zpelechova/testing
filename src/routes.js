@@ -59,23 +59,25 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl) 
             // "zzPTC Rate": PTCRate.replace("$", ""),
             // "zzPTC Name": PTCName,
         });
+        
+        const pagePTCObject = {
+            PTCRate: PTCRate,
+            PTCName: PTCName,
+            CustomerType: CustomerType,
+            FeeType: FeeType
+        };
+    
+        const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCName === pagePTCObject.PTCName);
+    
+        if (!found) PTCData.push(pagePTCObject);
+    
+        await Apify.setValue('ptc', PTCData);
     }
 
     //console.log(results);
     await dataset.pushData(results);
     await Apify.pushData(results);
 
-    const pagePTCObject = {
-        PTCRate: PTCRate,
-        PTCName: PTCName,
-        CustomerType: CustomerType,
-        FeeType: FeeType
-    };
-
-    const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCName === pagePTCObject.PTCName);
-
-    if (!found) PTCData.push(pagePTCObject);
-
-    await Apify.setValue('ptc', PTCData);
+    
  
 };

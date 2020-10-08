@@ -41,16 +41,23 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl) 
             "Customer Type": CustomerType,
             "Utility": Utility,
             "Supplier": Supplier.trim(),
+            "Rate Category" : "",
             "Rate Type": RateType.match(/.*\:(.*)/)[1].trim(),
             "Rate": Rate.replace("$", ""),
             "Term": Term.match(/.*\:(.*)/)[1].trim(),
             "Cancellation Fee": CancellationFee.match(/.*\:(.*)/)[1].trim(),
+            "Offer Notes": "",
             "Renewable Blend": RenewableBlend.match(/.*\:(.*)/)[1].replace("%", "").trim(),
             "Additional Products & Services": Additional.trim().replace(/\n/g, ""),
             "Fee": Fee.match(/.*\:(.*)/)[1].trim(),
             "Fee Type": FeeType,
-            "zzPTC Rate": PTCRate.replace("$", ""),
-    "zzPTC Name": PTCName,
+            "Fee Notes": "",
+            "Other Notes": "",
+            "Additional Products & Services": "",
+            "Rate units": "$/kWh",
+            "Termination Notes": "",
+            // "zzPTC Rate": PTCRate.replace("$", ""),
+            // "zzPTC Name": PTCName,
         });
     }
 
@@ -58,5 +65,17 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl) 
     await dataset.pushData(results);
     await Apify.pushData(results);
 
-    
+    const pagePTCObject = {
+        PTCRate: PTCRate,
+        PTCName: PTCName,
+        CustomerType: CustomerType,
+        FeeType: FeeType
+    };
+
+    const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCName === pagePTCObject.PTCName);
+
+    if (!found) PTCData.push(pagePTCObject);
+
+    await Apify.setValue('ptc', PTCData);
+ 
 };

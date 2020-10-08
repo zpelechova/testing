@@ -9,6 +9,8 @@ const { handleStart } = require('./routes');
 
 const { utils: { log } } = Apify;
 
+const PTCData = [];
+
 Apify.main(async () => {
     const { startUrls, zip } = {
         "startUrls": [
@@ -69,5 +71,31 @@ Apify.main(async () => {
 
     log.info('Starting the crawl.');
     await crawler.run();
+
+    for (const ptc of PTCData) {
+        const {PTCRate, PTCName, CustomerType, FeeType} = ptc;
+        await Apify.pushData({
+            "Date": (new Date()).toLocaleDateString("ISO"),
+            "Commodity": "Power",
+            "State": "OH",
+            "Customer Class": CustomerType || "",
+            "Utility": PTCName || "",
+            "Supplier": "",
+            "Rate Category": "",
+            "Rate Type": "PTC",
+            "Rate": PTCRate || "",
+            "Term": "",
+            "Cancellation Fee": "",
+            "Offer Notes": "",
+            "Fee": "",
+            "Fee Notes": FeeType || "",
+            "Fee Type": "",
+            "Other Notes": "",
+            "Additional Products & Services": "",
+            "Rate units": "$/kWh",
+            "Renewable blend": "",
+            "Termination Notes": ""
+        })};
+
     log.info('Crawl finished.');
 });

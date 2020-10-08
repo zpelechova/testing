@@ -68,7 +68,7 @@ async function extractItems($) {
                 .text()
                 .trim()
                 .slice(0, -1);
-            const size = $('#snippet--grid > div:nth-child(1) > div.product-box__info > div.a-tag.text-black.bg-gray-lighter.mb-1').text();
+            const size = $(this).find('#snippet--grid > div:nth-child(1) > div.product-box__info > div.a-tag.text-black.bg-gray-lighter.mb-1').text();
             const currentPrice = parseFloat($(this).find('[itemprop="price"]').attr('content'));
             const originalPrice = $(this).find('.price__old-price').eq(0).text().length !== 0 ? parseFloat($(this).find('.price__old-price').eq(0).text().replace(/(Kč|\s)/g, '')
                 .replace(',', '.')

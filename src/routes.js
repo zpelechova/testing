@@ -49,7 +49,7 @@ exports.handleUtility = async ({ request, page }) => {
 
     const CustomerType = await page.$eval("#ctl00_ContentPlaceHolder1_upOffers > div.search-resultbreadcrumb > strong", e => e.innerText.match(/.?\:(.*)/)[1].trim());
     const utilityName = await page.$eval("div.main-container div.main-left h3", e => e.innerText.trim());
-    let PTCInfo = await page.$eval("div.main-container > div.main-left", e => e.innerText.trim().replace(/\n/g, "").match(/(.?)rate is\s+\$\d\.\d+(.*)\d+/)[0].trim());
+    let PTCInfo = await page.$eval("div.main-container > div.main-left", e => e.innerText.trim().replace(/\n/g, "").text().match(/(.?)rate is\s+\$\d\.\d+(.*)\d+/)[0].trim());
     const PTCTerm = PTCInfo.match(/(.*)\-\sEffective(.*)\,/)[2].trim();
     const PTCRate = PTCInfo.match(/\d\.\d+/)[0].trim();
     const PTCUnit = PTCInfo.match(/per\s[a-zA-Z]+/)[0].trim();

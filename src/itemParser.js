@@ -36,6 +36,7 @@ function getItems(items, jsonCategories) {
             currentUnitPrice: item.pricePerUnit && item.pricePerUnit.full ? item.pricePerUnit.full : null,
             currency: item.currency ? item.currency : null,
             ingredients: item.ingredients ? item.ingredients : null,
+            brand: item.brand ? item.brand : null,
             // itemAmount: item.itemAmount ? item.itemAmount : null,
             // // countries: item.countries.code ? item.countries.code : null,
             // // countries: item.countries.name ? item.countries.name : null,

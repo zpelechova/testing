@@ -1,7 +1,7 @@
 {
-	"name": "kosik-cz",
-	"version": "0.1",
+	"name": "rohlik-cz",
+	"version": "0.0",
 	"buildTag": "latest",
 	"env": null,
-	"template": "cheerio_crawler"
+	"template": "puppeteer_crawler"
 }

@@ -24,7 +24,7 @@ function getBreadCrumbs(categoryId, jsonCategories) {
                 deliveryRestrictions ??*/
 
 function getItems(item, jsonCategories) {
-    // const results = [];
+    const results = [];
     // for (const item of items) {
         const result = {
             img: item.imgPath ? item.imgPath : null,
@@ -68,7 +68,7 @@ function getItems(item, jsonCategories) {
 
         // // }
         // result.breadcrumbs = getBreadCrumbs(item.mainCategoryId, jsonCategories);
-        // results.push(result);
+        results.push(result);
     // }
     return results;
 }

@@ -89,15 +89,20 @@ Apify.main(async () => {
                     await Apify.pushData(getItems(body.data.productList, jsonCategories));
                 }
             } else if (request.userData.label === 'PAGE') {
+                //sem potrebuju pridat itemId
+                const items = [];
+                for (product in body.data.productList){
+                    items.push(body.data.productList[i].productId);
+                }
                 const { categoryId } = request.userData;
                 if (body.data && body.data.productList && body.data.productList !== 0) {
                     console.log(`Storing ${body.data.productList.length} items for category ${categoryId}`);
-                    for (let i = 25; i <= max; i += 25) {
+                    for (const item of items) {
                         await requestQueue.addRequest(new Apify.Request({
-                            url: `https://www.rohlik.cz/services/frontend-service/products/${categoryId}?offset=${i}&limit=25`,
+                            url: `https://www.rohlik.cz/services/frontend-service/product/${item}/full`,
                             userData: {
-                                label: 'PAGE',
-                                categoryId,
+                                label: 'DETAIL',
+                                itemId,
                             },
                         }));
 

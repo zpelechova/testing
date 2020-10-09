@@ -104,10 +104,10 @@ Apify.main(async () => {
         }
       } else if (request.userData.label === 'PAGE') {
         //sem potrebuju pridat itemId
-        const items = []
+        const items = [];
         for (product in body.data.productList) {
           items.push(body.data.productList[i].productId)
-        }
+        };
         const { categoryId } = request.userData
         if (body.data && body.data.productList && body.data.productList !== 0) {
           console.log(
@@ -126,12 +126,12 @@ Apify.main(async () => {
           }
         }
       } else if (request.userData.label === 'DETAIL') {
-        const { categoryId } = request.userData
+        const { itemId } = request.userData
         if (body.data && body.data.productList && body.data.productList !== 0) {
           console.log(
-            `Storing ${body.data.productList.length} items for category ${categoryId}`
+            `Storing item ${itemId}`
           )
-          await Apify.pushData(getItems(body.data.productList, jsonCategories))
+          await Apify.pushData(getItems(body.data.product, jsonCategories))
         }
       }
 

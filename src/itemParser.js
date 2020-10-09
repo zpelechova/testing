@@ -23,9 +23,9 @@ function getBreadCrumbs(categoryId, jsonCategories) {
                 shelfLifeMin??
                 deliveryRestrictions ??*/
 
-function getItems(items, jsonCategories) {
-    const results = [];
-    for (const item of items) {
+function getItems(item, jsonCategories) {
+    // const results = [];
+    // for (const item of items) {
         const result = {
             img: item.imgPath ? item.imgPath : null,
             itemId: item.productId ? item.productId : null,
@@ -69,7 +69,7 @@ function getItems(items, jsonCategories) {
         }
         result.breadcrumbs = getBreadCrumbs(item.mainCategoryId, jsonCategories);
         results.push(result);
-    }
+    // }
     return results;
 }
 module.exports = getItems;

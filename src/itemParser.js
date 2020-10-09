@@ -47,26 +47,26 @@ function getItems(item, jsonCategories) {
             
             
         };
-        if (item.sales.length !== 0) {
-            for (const sale of item.sales) {
-                if (sale.type === 'sale') {
-                    result.originalPrice = result.currentPrice;
-                    result.originalUnitPrice = result.currentUnitPrice;
-                    result.currentPrice = sale.price && sale.price.full ? sale.price.full : null;
-                    result.currentUnitPrice = sale.priceForUnit && sale.priceForUnit.full ? sale.priceForUnit.full : null;
-                    result.discounted = true;
-                    /*
-                    console.log('#### DISCOUNTED ####')
-                    console.log(result);
-                    */
-                }
-            }
-        } else if (item.goodPrice) {
-            const { originalPrice } = item;
-            result.originalPrice = originalPrice.full;
-            result.discounted = true;
+        // if (item.sales.length !== 0) {
+        //     for (const sale of item.sales) {
+        //         if (sale.type === 'sale') {
+        //             result.originalPrice = result.currentPrice;
+        //             result.originalUnitPrice = result.currentUnitPrice;
+        //             result.currentPrice = sale.price && sale.price.full ? sale.price.full : null;
+        //             result.currentUnitPrice = sale.priceForUnit && sale.priceForUnit.full ? sale.priceForUnit.full : null;
+        //             result.discounted = true;
+        //             /*
+        //             console.log('#### DISCOUNTED ####')
+        //             console.log(result);
+        //             */
+        //         }
+        //     }
+        // } else if (item.goodPrice) {
+        //     const { originalPrice } = item;
+        //     result.originalPrice = originalPrice.full;
+        //     result.discounted = true;
 
-        }
+        // }
         result.breadcrumbs = getBreadCrumbs(item.mainCategoryId, jsonCategories);
         results.push(result);
     // }

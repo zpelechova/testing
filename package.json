@@ -1,19 +1,21 @@
 {
-	"name": "rohlik-cz",
+	"name": "offers-oh-gas",
 	"version": "0.0.1",
 	"description": "This is a boilerplate of an Apify actor.",
 	"dependencies": {
-		"apify": "^0.20.4-beta.10",
-		"got": "^9.6.0",
-		"proxy-agent": "^3.1.0",
-		"random-mua": "^0.4.1",
-		"tough-cookie": "^3.0.1",
-		"uuid": "^3.3.2"
+		"apify": "^0.21.0",
+		"csv-string": "^4.0.1",
+		"request-promise": "^4.2.6"
 	},
-	"devDependencies": {},
+	"devDependencies": {
+		"@apify/eslint-config": "0.1.0",
+		"eslint": "^7.0.0"
+	},
 	"scripts": {
-		"start": "node ./src/main.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"start": "node src/main.js",
+		"lint": "./node_modules/.bin/eslint ./src --ext .js,.jsx",
+		"lint:fix": "./node_modules/.bin/eslint ./src --ext .js,.jsx --fix",
+		"test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
 	},
 	"author": "It's not you it's me",
 	"license": "ISC"

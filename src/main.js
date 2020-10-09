@@ -1,156 +1,103 @@
-const Apify = require('apify')
-const CloudFlareUnBlocker = require('./cloudflare-unblocker')
-const getItems = require('./itemParser')
+/**
+ * This template is a production ready boilerplate for developing with `PuppeteerCrawler`.
+ * Use this to bootstrap your projects using the most up-to-date code.
+ * If you're looking for examples or want to learn more, see README.
+ */
 
-let jsonCategories = {}
-const firstPage =
-  'https://www.rohlik.cz/services/frontend-service/renderer/navigation/flat.json'
+const Apify = require('apify');
+const { handleBase, handleUtility } = require('./routes');
+
+const { utils: { log } } = Apify;
+
+const { LABEL, BLOCK_RESOURCES } = require("./config");
+
+const PTCData = [];
 
 Apify.main(async () => {
-  // Get queue and enqueue first url.
-  const requestQueue = await Apify.openRequestQueue()
-  await requestQueue.addRequest(
-    new Apify.Request({
-      url: firstPage,
-      userData: { label: 'main' }
-    })
-  )
-
-  const cloudFlareUnBlocker = new CloudFlareUnBlocker({
-    unblockUrl: firstPage,
-    apifyProxyGroups: ['CZECH_LUMINATI'] // Proxy should be definitely used.
-  })
-
-  // Create crawler.
-  const crawler = new Apify.BasicCrawler({
-    requestQueue,
-    maxConcurrency: 5,
-    useSessionPool: true,
-    handleRequestFunction: async ({ request, session }) => {
-      const response = await Apify.utils.requestAsBrowser({
-        url: request.url,
-        json: true,
-        ...cloudFlareUnBlocker.getRequestOptions(session)
-      })
-      session.setCookiesFromResponse(response)
-      const { statusCode, body } = response
-      if (statusCode !== 200 && statusCode !== 404) {
-        session.retire()
-        // dont mark this request as bad, it is probably looking for working session
-        request.retryCount--
-        // dont retry the request right away, wait a little bit
-        await Apify.utils.sleep(5000)
-        throw new Error('Session blocked, retiring.')
-      }
-
-      if (request.userData.label === 'main') {
-        const categories = Object.keys(body.navigation)
-        jsonCategories = body.navigation
-        if (categories.length !== 0) {
-          console.log(`Adding to the queue ${categories.length} of categories`)
-          for (const category of categories) {
-            await requestQueue.addRequest(
-              new Apify.Request({
-                url: `https://www.rohlik.cz/services/frontend-service/products/${category}?offset=0&limit=25`,
-                userData: {
-                  label: 'list',
-                  categoryId: category
-                },
-                uniqueKey: category.toString()
-              })
-            )
-            const subCategories = body.navigation[category].children
-            subCategories.length &&
-              console.log(
-                `Adding to the queue ${subCategories.length} of subCategories`
-              )
-            for (const subCategory of subCategories) {
-              await requestQueue.addRequest(
-                new Apify.Request({
-                  url: `https://www.rohlik.cz/services/frontend-service/products/${subCategory}?offset=0&limit=25`,
-                  userData: {
-                    label: 'list',
-                    categoryId: subCategory
-                  },
-                  uniqueKey: subCategory.toString()
-                })
-              )
+    const { startUrls } = {
+        "startUrls": [
+          {
+            "url": "http://www.energychoice.ohio.gov/ApplesToApplesCategory.aspx?Category=NaturalGas",
+            "method": "GET",
+            "userData": {
+              "label": "BASE"
             }
           }
-        }
-      } else if (request.userData.label === 'list') {
-        const max = Math.ceil(body.data.totalHits / 25) * 25
-        const { categoryId } = request.userData
-        max !== 0 &&
-          console.log(
-            `Adding to the queue ${max} for https://www.rohlik.cz/services/frontend-service/products/${categoryId}?offset=0&limit=25`
-          )
-        for (let i = 25; i <= max; i += 25) {
-          await requestQueue.addRequest(
-            new Apify.Request({
-              url: `https://www.rohlik.cz/services/frontend-service/products/${categoryId}?offset=${i}&limit=25`,
-              userData: {
-                label: 'PAGE',
-                categoryId
-              }
-            })
-          )
-        }
-        if (body.data && body.data.productList && body.data.productList !== 0) {
-          console.log(
-            `Storing ${body.data.productList.length} items for category ${categoryId}`
-          )
-          await Apify.pushData(getItems(body.data.productList, jsonCategories))
-        }
-      } else if (request.userData.label === 'PAGE') {
-        //sem potrebuju pridat itemId
-        const items = [];
-        for (product in body.data.productList) {
-          items.push(body.data.productList.productId)
-        };
-        const { categoryId } = request.userData
-        if (body.data && body.data.productList && body.data.productList !== 0) {
-          console.log(
-            `Storing ${body.data.productList.length} items for category ${categoryId}`
-          )
-          for (const item of items) {
-            await requestQueue.addRequest(
-              new Apify.Request({
-                url: `https://www.rohlik.cz/services/frontend-service/product/${item}/full`,
-                userData: {
-                  label: 'DETAIL',
-                  itemId
-                }
-              })
-            )
-          }
-        }
-      } else if (request.userData.label === 'DETAIL') {
-        const { itemId } = request.userData
-        if (body.data && body.data.productList && body.data.productList !== 0) {
-          console.log(
-            `Storing item ${itemId}`
-          )
-          await Apify.pushData(getItems(body.data.product, jsonCategories))
-        }
-      }
+        ]
+    };
 
-      await Apify.utils.sleep(1000)
-    },
+    const requestList = await Apify.openRequestList('start-urls', startUrls);
+    const requestQueue = await Apify.openRequestQueue();
+    const proxyConfiguration = await Apify.createProxyConfiguration(
+        {
+            groups: ['SHADER'],
+            countryCode: 'US'
+        }
+    );
 
-    sessionPoolOptions: {
-      maxPoolSize: 100,
-      createSessionFunction: cloudFlareUnBlocker.createSessionFunction.bind(
-        cloudFlareUnBlocker
-      )
-    },
+    const crawler = new Apify.PuppeteerCrawler({
+        requestList,
+        proxyConfiguration,
+        requestQueue,
+        useSessionPool: true,
+        persistCookiesPerSession: true,
+        launchPuppeteerOptions: {
+            // useApifyProxy: true,
+            // Chrome with stealth should work for most websites.
+            // If it doesn't, feel free to remove this.
+            useChrome: true,
+            stealth: true,
+        },
+        gotoFunction: async ({request, page}) => {
+            await Apify.utils.puppeteer.blockRequests(page, {
+                urlPatterns: [
+                    ...BLOCK_RESOURCES.analytics,
+                    ...BLOCK_RESOURCES.patterns
+                ]
+            });
+            return page.goto(request.url, {
+                waitUntil: "domcontentloaded"
+            });
+        },
+        handlePageFunction: async (context) => {
+            const { url, userData: { label } } = context.request;
+            log.info('Page opened.', { label, url });
+            switch (label) {
+                case LABEL.BASE:
+                    return handleBase(context, requestQueue);
+                case LABEL.UTILITY:
+                    return handleUtility(context);
+                default:
+                    throw new Error("Don't know what to do with this");
+            }
+        },
+    });
 
-    // If request failed 4 times then this function is executed.
-    handleFailedRequestFunction: async ({ request }) => {
-      console.log(`Request ${request.url} failed 4 times`)
-    }
-  })
-
-  // Run crawler.
-  await crawler.run()
-})
+    log.info('Starting the crawl.');
+    await crawler.run();
+    for (const ptc of PTCData) {
+        const {PTCRate, PTCTerm, PTCUnit, utilityName, CustomerType, FeeType} = ptc;
+        await Apify.pushData({
+            "Date": (new Date()).toLocaleDateString("ISO"),
+            "Commodity": "Power",
+            "State": "OH",
+            "Customer Class": CustomerType || "",
+            "Utility": utilityName || "",
+            "Supplier": "",
+            "Rate Category": "",
+            "Rate Type": "PTC",
+            "Rate": PTCRate || "",
+            "Term": PTCTerm || "",
+            "Cancellation Fee": "",
+            "Offer Notes": "",
+            "Fee": "",
+            "Fee Notes": FeeType || "",
+            "Fee Type": "",
+            "Other Notes": "",
+            "Additional Products & Services": "",
+            "Rate units": PTCUnit,
+            "Renewable blend": "",
+            "Termination Notes": ""
+        })}; 
+    log.info('Crawl finished.');
+});

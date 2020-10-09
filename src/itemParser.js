@@ -66,9 +66,9 @@ function getItems(item, jsonCategories) {
         //     result.originalPrice = originalPrice.full;
         //     result.discounted = true;
 
-        // }
-        result.breadcrumbs = getBreadCrumbs(item.mainCategoryId, jsonCategories);
-        results.push(result);
+        // // }
+        // result.breadcrumbs = getBreadCrumbs(item.mainCategoryId, jsonCategories);
+        // results.push(result);
     // }
     return results;
 }

@@ -106,7 +106,7 @@ Apify.main(async () => {
         //sem potrebuju pridat itemId
         const items = [];
         for (product in body.data.productList) {
-          items.push(body.data.productList[i].productId)
+          items.push(body.data.productList.productId)
         };
         const { categoryId } = request.userData
         if (body.data && body.data.productList && body.data.productList !== 0) {

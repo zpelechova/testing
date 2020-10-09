@@ -85,13 +85,27 @@ Apify.main(async () => {
                     }));
                 }
                 if (body.data && body.data.productList && body.data.productList !== 0) {
-                    console.log(`Stroring ${body.data.productList.length} items for category ${categoryId}`);
+                    console.log(`Storing ${body.data.productList.length} items for category ${categoryId}`);
                     await Apify.pushData(getItems(body.data.productList, jsonCategories));
                 }
             } else if (request.userData.label === 'PAGE') {
                 const { categoryId } = request.userData;
                 if (body.data && body.data.productList && body.data.productList !== 0) {
-                    console.log(`Stroring ${body.data.productList.length} items for category ${categoryId}`);
+                    console.log(`Storing ${body.data.productList.length} items for category ${categoryId}`);
+                    for (let i = 25; i <= max; i += 25) {
+                        await requestQueue.addRequest(new Apify.Request({
+                            url: `https://www.rohlik.cz/services/frontend-service/products/${categoryId}?offset=${i}&limit=25`,
+                            userData: {
+                                label: 'PAGE',
+                                categoryId,
+                            },
+                        }));
+
+                }
+            } else if (request.userData.label === 'DETAIL') {
+                const { categoryId } = request.userData;
+                if (body.data && body.data.productList && body.data.productList !== 0) {
+                    console.log(`Storing ${body.data.productList.length} items for category ${categoryId}`);
                     await Apify.pushData(getItems(body.data.productList, jsonCategories));
                 }
             }

@@ -36,13 +36,13 @@ function getItems(items, jsonCategories) {
             currentUnitPrice: item.pricePerUnit && item.pricePerUnit.full ? item.pricePerUnit.full : null,
             currency: item.currency ? item.currency : null,
             ingredients: item.ingredients ? item.ingredients : null,
-            itemAmount: item.itemAmount ? item.itemAmount : null,
-            countries: item.countries.code ? item.countries.code : null,
-            countries: item.countries.name ? item.countries.name : null,
-            premiumOnly: item.premiumOnly ? item.premiumOnly : null,
-            shelfLifeAvg: item.shelfLifeAvg ? item.shelfLifeAvg : null,
-            shelfLifeMin: item.shelfLifeMin ? item.shelfLifeMin : null,
-            deliveryRestrictions: item.deliveryRestrictions ? item.deliveryRestrictions : null,
+            // itemAmount: item.itemAmount ? item.itemAmount : null,
+            // // countries: item.countries.code ? item.countries.code : null,
+            // // countries: item.countries.name ? item.countries.name : null,
+            // premiumOnly: item.premiumOnly ? item.premiumOnly : null,
+            // shelfLifeAvg: item.shelfLifeAvg ? item.shelfLifeAvg : null,
+            // shelfLifeMin: item.shelfLifeMin ? item.shelfLifeMin : null,
+            // deliveryRestrictions: item.deliveryRestrictions ? item.deliveryRestrictions : null,
             
             
         };

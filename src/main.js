@@ -62,10 +62,10 @@ Apify.main(async () => {
             stealth: true,
         },
 
-        handlePageFunction: async (context, PTCData) => {
+        handlePageFunction: async (context) => {
             const { url, userData: { label, zip, originalUrl } } = context.request;
             log.info('Page opened.', { label, url });
-            await handleStart(context, requestQueue, zip, originalUrl);
+            await handleStart(context, requestQueue, zip, originalUrl, PTCData);
         },
     });
 

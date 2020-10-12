@@ -53,32 +53,31 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl, 
             "Rate Type": RateType.match(/.*\:(.*)/)[1].trim(),
             "Rate": Rate.replace("$", ""),
             "Unit": Unit.trim(),
-            "PTC Rate": PTCRate.replace("$", ""),
-            "PTC Unit": PTCUnit.trim(),
             "Term": Term.match(/.*\:(.*)/)[1].trim(),
             "Cancellation Fee": CancellationFee.match(/.*\:(.*)/)[1].trim(),
             "Additional Products & Services": Additional.trim().replace(/\n/g, ""),
             "Fee Type": FeeType,
         });
+        const pagePTCObject = {
+            PTCRate: PTCRate.replace("$", ""),
+            PTCTerm: PTCTerm,
+            PTCUnit: PTCUnit.trim(),
+            utilityName: Utility,
+            CustomerType: CustomerType,
+        };
+    
+        const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCTerm === pagePTCObject.PTCTerm && e.utilityName === pagePTCObject.utilityName);
+    
+        if (!found) PTCData.push(pagePTCObject);
+    
+        await Apify.setValue('ptc', PTCData);
     }
 
     //console.log(results);
     await dataset.pushData(results);
     await Apify.pushData(results);
 
-    const pagePTCObject = {
-        PTCRate: PTCRate.replace("$", ""),
-        PTCTerm: PTCTerm,
-        utilityName: utilityName,
-        CustomerType: CustomerType,
-        FeeType: FeeType
-    };
 
-    const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCTerm === pagePTCObject.PTCTerm && e.utilityName === pagePTCObject.utilityName);
-
-    if (!found) PTCData.push(pagePTCObject);
-
-    await Apify.setValue('ptc', PTCData);
 };
 
 exports.handleList = async ({ request, page }) => {

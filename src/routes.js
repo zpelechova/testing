@@ -5,79 +5,86 @@ const { utils: { log } } = Apify;
 exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl, PTCData) => {
     const dataset = await Apify.openDataset('powermatrix');
     await page.waitForSelector("footer.l-footer");
+    await page.waitFor(2000);
     const results = []
-    if (originalUrl != undefined)
-    {const distributors = await page.$$eval("a.multi-distributor-home", elems => elems.map(elem => elem.getAttribute("data-id")));
-    console.log(originalUrl);
-    let currentUrl = originalUrl.replace("{zip}", zip);
-    for (let distributor of distributors) {
-        await requestQueue.addRequest({
-            url: `${currentUrl}&distributor=${distributor}`
-        });
-    }}
-    const tables = await page.$$("div.rate-item");
+    let Util;
+    if (originalUrl != undefined) {
+        const distributors = await page.$$eval("ul.result-list > li > a", elems => elems.map(elem => elem.getAttribute("id")));
+        let currentUrl = originalUrl.replace("{zip}", zip);
+        for (let distributor of distributors) {
+            await requestQueue.addRequest({
+                url: `${currentUrl}&distributor=${distributor}`
+            });
+        }
+        if (distributors.length !== 0) {
+            return;
+        }
+    }
+    const tables = await page.$$("#find-a-rate-suppliers div > div.views-field.views-field-nothing.wrapper");
     for (let tid in tables) {
         let table = tables[tid];
-        if (await table.$eval("div.supplier-name.enrollmentNo > span.name", el => el.innerText) == "%distributor%") continue;
-        let Supplier = await table.$eval("div.supplier-name.enrollmentNo > span.name", el => el.innerText);
+        if (tid == 0) continue;
+        let Supplier = await table.$eval("div.supplier-name > span.name", el => el.innerText);
         let RateType = await table.$eval("div.copy > div.left > span", el => el.innerText);
-        let Term = await table.$eval("div.middle > span.term-length", el => el.innerText);
+        let Term = await table.$eval("div.left > span.term-length", el => el.innerText);
         let Rate = await table.$eval("div.supplier-rate > span.rate", el => el.innerText);
+        let Unit = await table.$eval("div.supplier-rate > span.unit #unit", el => el.innerText);
         let CancellationFee = await table.$eval("div.middle > span.cancellation", el => el.innerText);
-        let RenewableBlend = await table.$eval("div.left > span.renewable", el => el.innerText);
-        let Fee = await table.$eval("div.middle > span.enrollment-fee", el => el.innerText);
         let FeeType = await table.$eval("div.middle > span.monthly-fee", el => el.innerText);
-        let Utility = await page.$eval("div.ratetype-result > div.distributor-name > span.name", el => el.innerText);
+        let Utility = await page.$eval("div.distributor-name > span.name", el => el.innerText);
         let PTCRate = await page.$eval("div.distributor-rate > span.rate", el => el.innerText);
-        let PTCName = await page.$eval("div.distributor-name > span.name", el => el.innerText);
-        let Additional = await table.$eval("div.more-info", el => el.innerText);
+        let PTCUnit = await page.$eval("div.distributor-rate > span.unit", el => el.innerText);
+        let Additional = "";
+        try {
+            await page.click("div.right > span.additional-information > a");
+            await page.waitForSelector("div.views-field.views-field-nothing.wrapper > span > div.more-info");
+            Additional = await table.$eval("div.views-field.views-field-nothing.wrapper > span > div.more-info", el => el.innerText)
+        } catch (error) {"The element didn't appear."};
         let CustomerType;
-        if (request.loadedUrl.indexOf("shop-for-your-home") != -1) CustomerType = "Residential";
-        else CustomerType = "Small business";
+        if (request.loadedUrl.indexOf("shop-for-your-small-business") != -1) CustomerType = "Small business";
+        else CustomerType = "Residential";
         results.push({
             "Date": (new Date()).toLocaleDateString("ISO"),
-            "Commodity": "Power",
+            "Commodity": "Gas",
             "State": "PA",
             "Customer Type": CustomerType,
             "Utility": Utility,
             "Supplier": Supplier.trim(),
-            "Rate Category" : "",
             "Rate Type": RateType.match(/.*\:(.*)/)[1].trim(),
             "Rate": Rate.replace("$", ""),
+            "Unit": Unit.trim(),
+            "PTC Rate": PTCRate.replace("$", ""),
+            "PTC Unit": PTCUnit.trim(),
             "Term": Term.match(/.*\:(.*)/)[1].trim(),
             "Cancellation Fee": CancellationFee.match(/.*\:(.*)/)[1].trim(),
-            "Offer Notes": "",
-            "Renewable Blend": RenewableBlend.match(/.*\:(.*)/)[1].replace("%", "").trim(),
             "Additional Products & Services": Additional.trim().replace(/\n/g, ""),
-            "Fee": Fee.match(/.*\:(.*)/)[1].trim(),
             "Fee Type": FeeType,
-            "Fee Notes": "",
-            "Other Notes": "",
-            "Additional Products & Services": "",
-            "Rate units": "$/kWh",
-            "Termination Notes": "",
-            // "zzPTC Rate": PTCRate.replace("$", ""),
-            // "zzPTC Name": PTCName,
         });
-        
-        const pagePTCObject = {
-            PTCRate: PTCRate,
-            PTCName: PTCName,
-            CustomerType: CustomerType,
-            FeeType: FeeType
-        };
-    
-        const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCName === pagePTCObject.PTCName);
-    
-        if (!found) PTCData.push(pagePTCObject);
-    
-        await Apify.setValue('ptc', PTCData);
     }
 
     //console.log(results);
     await dataset.pushData(results);
     await Apify.pushData(results);
 
-    
- 
+    const pagePTCObject = {
+        PTCRate: PTCRate.replace("$", ""),
+        PTCTerm: PTCTerm,
+        utilityName: utilityName,
+        CustomerType: CustomerType,
+        FeeType: FeeType
+    };
+
+    const found = PTCData.find(e => e.PTCRate === pagePTCObject.PTCRate && e.PTCTerm === pagePTCObject.PTCTerm && e.utilityName === pagePTCObject.utilityName);
+
+    if (!found) PTCData.push(pagePTCObject);
+
+    await Apify.setValue('ptc', PTCData);
+};
+
+exports.handleList = async ({ request, page }) => {
+    // Handle pagination
+};
+
+exports.handleDetail = async ({ request, page }) => {
+    // Handle details
 };

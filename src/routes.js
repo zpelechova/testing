@@ -60,7 +60,6 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl, 
         });
         const pagePTCObject = {
             PTCRate: PTCRate.replace("$", ""),
-            PTCTerm: PTCTerm,
             PTCUnit: PTCUnit.trim(),
             utilityName: Utility,
             CustomerType: CustomerType,

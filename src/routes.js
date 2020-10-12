@@ -106,7 +106,7 @@ exports.handleUtility = async ({ request, page}, PTCData) => {
             "Fee Type": line.IntroductoryOfferDetails.trim(),
             "Other Notes": "",
             "Additional Products & Services": line.PromotionalOfferDetails.trim(),
-            "Rate units": PTCUnit,
+            "Rate units": PTCUnit.replace('per ', ''),
             "Renewable blend": line.Renewable,
             "Termination Notes": ""
         }

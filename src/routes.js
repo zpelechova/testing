@@ -84,6 +84,6 @@ exports.handleList = async ({ request, page }) => {
     // Handle pagination
 };
 
-exports.handleDetail = async ({ request, page }) => {
+exports.handleDetail = async ({ request, page }, PTCData) => {
     // Handle details
 };

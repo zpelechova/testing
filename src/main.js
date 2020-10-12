@@ -77,7 +77,7 @@ Apify.main(async () => {
                 case 'LIST':
                     return handleList(context);
                 case 'DETAIL':
-                    return handleDetail(context);
+                    return handleDetail(context, PTCData);
                 default:
                     return handleStart(context, requestQueue, zip, originalUrl, PTCData);
             }
@@ -111,6 +111,6 @@ Apify.main(async () => {
             "Renewable blend": "",
             "Termination Notes": ""
         })};
-        
+
     log.info('Crawl finished.');
 });

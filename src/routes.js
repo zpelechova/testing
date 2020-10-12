@@ -2,7 +2,7 @@ const Apify = require('apify');
 
 const { utils: { log } } = Apify;
 
-exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl) => {
+exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl, PTCData) => {
     const dataset = await Apify.openDataset('powermatrix');
     await page.waitForSelector("footer.l-footer");
     const results = []

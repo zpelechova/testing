@@ -1,101 +1,114 @@
-/**
- * This template is a production ready boilerplate for developing with `PuppeteerCrawler`.
- * Use this to bootstrap your projects using the most up-to-date code.
- * If you're looking for examples or want to learn more, see README.
- */
-
 const Apify = require('apify');
-const { handleStart } = require('./routes');
+const CloudFlareUnBlocker = require('./cloudflare-unblocker');
+const getItems = require('./itemParser');
 
-const { utils: { log } } = Apify;
 
-const PTCData = [];
+let jsonCategories = {};
+const firstPage = 'https://www.rohlik.cz/services/frontend-service/renderer/navigation/flat.json';
 
 Apify.main(async () => {
-    const { startUrls, zip } = {
-        "startUrls": [
-          {
-            "url": "https://www.papowerswitch.com/shop-for-electricity/shop-for-your-home?type=all&zip={zip}"
-          },
-          {
-            "url": "https://www.papowerswitch.com/shop-for-electricity/shop-for-your-small-business?type=all&zip={zip}"
-          }
-        ],
-        "zip": [
-          "15212",
-          "19601",
-          "19019",
-          "15521",
-          "15237",
-          "17501",
-          "17320"
-        ]
-    };
-    //const requestList = await Apify.openRequestList('start-urls', startUrls);
+    // Get queue and enqueue first url.
     const requestQueue = await Apify.openRequestQueue();
-    for (let url of startUrls) {
-        if (url.url.indexOf("{zip}") == -1) {
-            throw new Error(`${url.url}: Nowhere to put ZIP code to`);
-        }
-        for (let zipCode of zip) {
-            requestQueue.addRequest({
-                url: url.url.replace("{zip}", zipCode),
-                userData: {
-                    zip: zipCode,
-                    originalUrl: url.url
-                }
-            });
-        }
+    await requestQueue.addRequest(new Apify.Request({
+        url: firstPage,
+        userData: { label: 'main' },
+    }));
 
-    }
+    const cloudFlareUnBlocker = new CloudFlareUnBlocker({
+        unblockUrl: firstPage,
+        apifyProxyGroups: ['CZECH_LUMINATI'], // Proxy should be definitely used.
+    });
 
-    const crawler = new Apify.PuppeteerCrawler({
-        //requestList,
+    // Create crawler.
+    const crawler = new Apify.BasicCrawler({
         requestQueue,
+        maxConcurrency: 5,
         useSessionPool: true,
-        persistCookiesPerSession: true,
-        launchPuppeteerOptions: {
-            useApifyProxy: false,
-            // Chrome with stealth should work for most websites.
-            // If it doesn't, feel free to remove this.
-            useChrome: true,
-            stealth: true,
+        handleRequestFunction: async ({ request, session }) => {
+            const response = await Apify.utils.requestAsBrowser({
+                url: request.url,
+                json: true,
+                ...cloudFlareUnBlocker.getRequestOptions(session),
+            });
+            session.setCookiesFromResponse(response);
+            const { statusCode, body } = response;
+            if (statusCode !== 200 && statusCode !== 404) {
+                session.retire();
+                // dont mark this request as bad, it is probably looking for working session
+                request.retryCount--;
+                // dont retry the request right away, wait a little bit
+                await Apify.utils.sleep(5000);
+                throw new Error('Session blocked, retiring.');
+            }
+
+            if (request.userData.label === 'main') {
+                const categories = Object.keys(body.navigation);
+                jsonCategories = body.navigation;
+                if (categories.length !== 0) {
+                    console.log(`Adding to the queue ${categories.length} of categories`);
+                    for (const category of categories) {
+                        await requestQueue.addRequest(new Apify.Request({
+                            url: `https://www.rohlik.cz/services/frontend-service/products/${category}?offset=0&limit=25`,
+                            userData: {
+                                label: 'list',
+                                categoryId: category,
+                            },
+                            uniqueKey: category.toString()
+                            ,
+                        }));
+                        const subCategories = body.navigation[category].children;
+                        subCategories.length && console.log(`Adding to the queue ${subCategories.length} of subCategories`);
+                        for (const subCategory of subCategories) {
+                            await requestQueue.addRequest(new Apify.Request({
+                                url: `https://www.rohlik.cz/services/frontend-service/products/${subCategory}?offset=0&limit=25`,
+                                userData: {
+                                    label: 'list',
+                                    categoryId: subCategory,
+                                },
+                                uniqueKey: subCategory.toString()
+                                ,
+                            }));
+                        }
+                    }
+                }
+            } else if (request.userData.label === 'list') {
+                const max = Math.ceil(body.data.totalHits / 25) * 25;
+                const { categoryId } = request.userData;
+                max !== 0 && console.log(`Adding to the queue ${max} for https://www.rohlik.cz/services/frontend-service/products/${categoryId}?offset=0&limit=25`);
+                for (let i = 25; i <= max; i += 25) {
+                    await requestQueue.addRequest(new Apify.Request({
+                        url: `https://www.rohlik.cz/services/frontend-service/products/${categoryId}?offset=${i}&limit=25`,
+                        userData: {
+                            label: 'PAGE',
+                            categoryId,
+                        },
+                    }));
+                }
+                if (body.data && body.data.productList && body.data.productList !== 0) {
+                    console.log(`Stroring ${body.data.productList.length} items for category ${categoryId}`);
+                    await Apify.pushData(getItems(body.data.productList, jsonCategories));
+                }
+            } else if (request.userData.label === 'PAGE') {
+                const { categoryId } = request.userData;
+                if (body.data && body.data.productList && body.data.productList !== 0) {
+                    console.log(`Stroring ${body.data.productList.length} items for category ${categoryId}`);
+                    await Apify.pushData(getItems(body.data.productList, jsonCategories));
+                }
+            }
+
+            await Apify.utils.sleep(1000);
+        },
+        sessionPoolOptions: {
+            maxPoolSize: 100,
+            createSessionFunction: cloudFlareUnBlocker.createSessionFunction.bind(cloudFlareUnBlocker),
         },
 
-        handlePageFunction: async (context) => {
-            const { url, userData: { label, zip, originalUrl } } = context.request;
-            log.info('Page opened.', { label, url });
-            await handleStart(context, requestQueue, zip, originalUrl, PTCData);
+        // If request failed 4 times then this function is executed.
+        handleFailedRequestFunction: async ({ request }) => {
+            console.log(`Request ${request.url} failed 4 times`);
         },
     });
 
-    log.info('Starting the crawl.');
+    // Run crawler.
     await crawler.run();
-
-    for (const ptc of PTCData) {
-        const {PTCRate, PTCName, CustomerType, FeeType} = ptc;
-        await Apify.pushData({
-            "Date": (new Date()).toLocaleDateString("ISO"),
-            "Commodity": "Power",
-            "State": "OH",
-            "Customer Class": CustomerType || "",
-            "Utility": PTCName || "",
-            "Supplier": "",
-            "Rate Category": "",
-            "Rate Type": "PTC",
-            "Rate": PTCRate || "",
-            "Term": "",
-            "Cancellation Fee": "",
-            "Offer Notes": "",
-            "Fee": "",
-            "Fee Notes": FeeType || "",
-            "Fee Type": "",
-            "Other Notes": "",
-            "Additional Products & Services": "",
-            "Rate units": "$/kWh",
-            "Renewable blend": "",
-            "Termination Notes": ""
-        })};
-
-    log.info('Crawl finished.');
 });

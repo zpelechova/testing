@@ -1,15 +1,9 @@
-# CheerioCrawler project
+# My beautiful actor
 
-This template is a production ready boilerplate for developing with `CheerioCrawler`.
-Use this to bootstrap your projects using the most up-to-date code.
+The `README.md` file contains a documentation what your actor does and how to use it,
+which is then displayed in the app or Apify Store. It's always a good
+idea to write a good `README.md`, in a few months not even you
+will remember all the details about the actor.
 
-If you're looking for examples or want to learn more visit:
-- [Tutorial](https://sdk.apify.com/docs/guides/getting-started#cheeriocrawler-aka-jquery-crawler) 
-- [Documentation](https://sdk.apify.com/docs/api/cheerio-crawler) 
-- [Examples](https://sdk.apify.com/docs/examples/cheerio-crawler) 
-
-## Documentation reference
-
-- [Apify SDK](https://sdk.apify.com/)
-- [Apify Actor documentation](https://docs.apify.com/actor)
-- [Apify CLI](https://docs.apify.com/cli)
+You can use [Markdown](https://www.markdownguide.org/cheat-sheet)
+language for rich formatting.

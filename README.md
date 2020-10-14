@@ -1,9 +1,16 @@
-# My beautiful actor
+# AAA Prices scraper
 
-The `README.md` file contains a documentation what your actor does and how to use it,
-which is then displayed in the app or Apify Store. It's always a good
-idea to write a good `README.md`, in a few months not even you
-will remember all the details about the actor.
+Scrapes prices of all car offers on AAAAuto.cz
 
-You can use [Markdown](https://www.markdownguide.org/cheat-sheet)
-language for rich formatting.
+## Dataset
+
+* carName - car name as shown on offer
+* offerDetailUrl - URL to offer detail
+* finalPrice - final price with applied discount(this is final cash price, not price available when buying on installment)
+* discount - discount applied
+* discountType - type(name) of discount
+
+## TODO
+
+* Add some delays between requests
+* for of with cheerio set

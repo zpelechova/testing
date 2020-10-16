@@ -61,7 +61,7 @@ exports.handleStart = async ({ request, page }, requestQueue, zip, originalUrl, 
         });
         
         const pagePTCObject = {
-            PTCRate: PTCRate.replace(/\D/g, ''),
+            PTCRate: PTCRate.replace('$', ''),
             PTCName: PTCName,
             CustomerType: CustomerType,
             FeeType: FeeType

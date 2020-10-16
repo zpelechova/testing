@@ -88,7 +88,7 @@ Apify.main(async () => {
     await crawler.run();
 
     for (const ptc of PTCData) {
-        const {PTCRate, PTCTerm, utilityName, CustomerType, FeeType} = ptc;
+        const {PTCRate, PTCUnit, PTCTerm, utilityName, CustomerType, FeeType} = ptc;
         await Apify.pushData({
             "Date": (new Date()).toLocaleDateString("ISO"),
             "Commodity": "Power",
@@ -107,7 +107,7 @@ Apify.main(async () => {
             "Fee Type": "",
             "Other Notes": "",
             "Additional Products & Services": "",
-            "Rate Units": "$/kWh",
+            "Rate Units": PTCUnit,
             "Renewable blend": "",
             "Termination Notes": ""
         })};

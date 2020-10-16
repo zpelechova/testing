@@ -93,7 +93,7 @@ Apify.main(async () => {
             "Other Notes": "",
             "Additional Products & Services": "",
             "Rate units": "$/kWh",
-            "Renewable blend": "",
+            "Renewable Blend": "",
             "Termination Notes": ""
         })};
 

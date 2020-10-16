@@ -5,7 +5,7 @@
  */
 
 const Apify = require('apify');
-const { handleStart } = require('./routes');
+const { handleStart, handleList, handleDetail } = require('./routes');
 
 const { utils: { log } } = Apify;
 
@@ -15,10 +15,10 @@ Apify.main(async () => {
     const { startUrls, zip } = {
         "startUrls": [
           {
-            "url": "https://www.papowerswitch.com/shop-for-electricity/shop-for-your-home?type=all&zip={zip}"
+            "url": "https://www.pagasswitch.com/shop-for-natural-gas?zipcode={zip}"
           },
           {
-            "url": "https://www.papowerswitch.com/shop-for-electricity/shop-for-your-small-business?type=all&zip={zip}"
+            "url": "https://www.pagasswitch.com/shop-for-natural-gas/shop-for-your-small-business?zipcode={zip}"
           }
         ],
         "zip": [
@@ -31,6 +31,7 @@ Apify.main(async () => {
           "17320"
         ]
     };
+
     //const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
     for (let url of startUrls) {
@@ -47,25 +48,39 @@ Apify.main(async () => {
             });
         }
 
-    }
+    };
+    const proxyConfiguration = await Apify.createProxyConfiguration(
+        {
+            groups: ['SHADER'],
+            countryCode: 'US'
+        }
+    );
 
     const crawler = new Apify.PuppeteerCrawler({
         //requestList,
+        proxyConfiguration,
         requestQueue,
         useSessionPool: true,
         persistCookiesPerSession: true,
         launchPuppeteerOptions: {
-            useApifyProxy: false,
+            // useApifyProxy: true,
             // Chrome with stealth should work for most websites.
             // If it doesn't, feel free to remove this.
             useChrome: true,
-            stealth: true,
+            stealth: true
         },
 
         handlePageFunction: async (context) => {
             const { url, userData: { label, zip, originalUrl } } = context.request;
             log.info('Page opened.', { label, url });
-            await handleStart(context, requestQueue, zip, originalUrl, PTCData);
+            switch (label) {
+                case 'LIST':
+                    return handleList(context);
+                case 'DETAIL':
+                    return handleDetail(context, PTCData);
+                default:
+                    return handleStart(context, requestQueue, zip, originalUrl, PTCData);
+            }
         },
     });
 
@@ -73,27 +88,27 @@ Apify.main(async () => {
     await crawler.run();
 
     for (const ptc of PTCData) {
-        const {PTCRate, PTCName, CustomerType, FeeType} = ptc;
+        const {PTCRate, PTCTerm, utilityName, CustomerType, FeeType} = ptc;
         await Apify.pushData({
             "Date": (new Date()).toLocaleDateString("ISO"),
             "Commodity": "Power",
-            "State": "PA",
+            "State": "OH",
             "Customer Class": CustomerType || "",
-            "Utility": PTCName || "",
+            "Utility": utilityName || "",
             "Supplier": "",
             "Rate Category": "",
             "Rate Type": "PTC",
             "Rate": PTCRate || "",
-            "Term": "",
+            "Term": PTCTerm || "",
             "Cancellation Fee": "",
             "Offer Notes": "",
             "Fee": "",
-            "Fee Notes": "",
-            "Fee Type": FeeType || "",
+            "Fee Notes": FeeType || "",
+            "Fee Type": "",
             "Other Notes": "",
             "Additional Products & Services": "",
-            "Rate units": "$/kWh",
-            "Renewable Blend": "",
+            "Rate Units": "$/kWh",
+            "Renewable blend": "",
             "Termination Notes": ""
         })};
 

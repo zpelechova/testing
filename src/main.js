@@ -107,7 +107,7 @@ Apify.main(async () => {
             "Fee Type": "",
             "Other Notes": "",
             "Additional Products & Services": "",
-            "Rate Units": PTCUnit,
+            "Rate Units": PTCUnit.replace('per', '').trim(),
             "Renewable blend": "",
             "Termination Notes": ""
         })};
